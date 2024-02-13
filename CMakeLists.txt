@@ -16,19 +16,18 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-set(LIBRARY_NAME Transmog)
+set(LIBRARY_NAME Dualspec)
 
 #Base files
-file(GLOB transmog_source ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
-    source_group("Transmog" FILES ${transmog_source})
+file(GLOB dualspec_source ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
+    source_group("Dualspec" FILES ${dualspec_source})
 
 #Define base source library
-set(LIBRARY_SRCS ${transmog_source})
+set(LIBRARY_SRCS ${dualspec_source})
 
 # Define ENABLE_PLAYERBOTS if need
 if (BUILD_MANGOSBOTS OR BUILD_IKE3_BOTS)
 	include_directories(
-		${CMAKE_SOURCE_DIR}/dep/g3dlite
 		${CMAKE_SOURCE_DIR}/src/modules/Bots/playerbot
 		${CMAKE_SOURCE_DIR}/src/modules/Bots/ahbot
 	)
@@ -40,7 +39,7 @@ if (BUILD_MANGOSBOTS OR BUILD_IKE3_BOTS)
 	endif()
 endif()
 
-add_definitions(-DENABLE_TRANSMOG)
+add_definitions(-DENABLE_DUALSPEC)
 
 # Define Expansion
 if ( ${CMAKE_PROJECT_NAME} MATCHES "Classic")
@@ -68,8 +67,8 @@ if(UNIX)
 endif()
 
 # Install config files
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/transmog.conf.dist.in ${CMAKE_CURRENT_BINARY_DIR}/transmog.conf.dist)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/dualspec.conf.dist.in ${CMAKE_CURRENT_BINARY_DIR}/dualspec.conf.dist)
 if (NOT CONF_INSTALL_DIR)
 	set(CONF_INSTALL_DIR ${CONF_DIR})
 endif()
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/transmog.conf.dist DESTINATION ${CONF_INSTALL_DIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dualspec.conf.dist DESTINATION ${CONF_INSTALL_DIR})

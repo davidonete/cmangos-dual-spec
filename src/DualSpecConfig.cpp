@@ -1,18 +1,18 @@
-#include "DualspecConfig.h"
+#include "DualSpecConfig.h"
 
 #include "Globals/ObjectMgr.h"
 #include "Log.h"
 #include "SystemConfig.h"
 
-DualspecConfig::DualspecConfig()
+DualSpecConfig::DualSpecConfig()
 : enabled(false)
 {
     
 }
 
-INSTANTIATE_SINGLETON_1(DualspecConfig);
+INSTANTIATE_SINGLETON_1(DualSpecConfig);
 
-bool DualspecConfig::Initialize()
+bool DualSpecConfig::Initialize()
 {
     sLog.outString("Initializing Dual Spec");
 

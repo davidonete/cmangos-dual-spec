@@ -6,6 +6,7 @@
 * EndScriptData
 */
 
+/*
 #include "AI/ScriptDevAI/ScriptDevAIMgr.h"
 #include "AI/ScriptDevAI/include/sc_gossip.h"
 #include "World.h"
@@ -219,3 +220,5 @@ void AddSC_npc_custom_dualspec()
     pNewScript->pGossipSelectWithCode = &GossipSelectWithCode_custom_dualspec;
     pNewScript->RegisterSelf();
 }
+
+*/

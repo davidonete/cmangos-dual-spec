@@ -5,6 +5,7 @@
 * SDComment:
 * EndScriptData
 */
+/*
 
 #include "AI/ScriptDevAI/ScriptDevAIMgr.h"
 #include "AI/ScriptDevAI/include/sc_gossip.h"
@@ -39,7 +40,7 @@ enum DualSpecMessages
     DUAL_SPEC_PURCHASE,
 };
 
-bool GossipItemUse_custom_dualspec(Player* pPlayer, Item* pItem, const SpellCastTargets& /*pTargets*/)
+bool GossipItemUse_custom_dualspec(Player* pPlayer, Item* pItem, const SpellCastTargets&)
 {
     pPlayer->GetPlayerMenu()->ClearMenus();
 
@@ -186,3 +187,4 @@ void AddSC_item_custom_dualspec()
     pNewScript->pGossipSelectItemWithCode = &GossipSelectItemWithCode_custom_dualspec;
     pNewScript->RegisterSelf(false);
 }
+*/

@@ -2,10 +2,10 @@
 
 #include "Config/Config.h"
 
-class DualspecConfig
+class DualSpecConfig
 {
 public:
-    DualspecConfig();
+    DualSpecConfig();
 
     bool Initialize();
 
@@ -16,5 +16,5 @@ private:
     Config config;
 };
 
-#define sDualspecConfig MaNGOS::Singleton<DualspecConfig>::Instance()
+#define sDualSpecConfig MaNGOS::Singleton<DualSpecConfig>::Instance()
 

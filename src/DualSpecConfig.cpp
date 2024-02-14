@@ -1,51 +1,29 @@
-#include "TransmogConfig.h"
+#include "DualspecConfig.h"
 
 #include "Globals/ObjectMgr.h"
 #include "Log.h"
 #include "SystemConfig.h"
 
-TransmogConfig::TransmogConfig()
+DualspecConfig::DualspecConfig()
 : enabled(false)
-, costMultiplier(1.0f)
-, costFee(0U)
-, tokenRequired(false)
-, tokenEntry(0U)
-, tokenAmount(0U)
 {
     
 }
 
-INSTANTIATE_SINGLETON_1(TransmogConfig);
+INSTANTIATE_SINGLETON_1(DualspecConfig);
 
-bool TransmogConfig::Initialize()
+bool DualspecConfig::Initialize()
 {
-    sLog.outString("Initializing Transmog");
+    sLog.outString("Initializing Dual Spec");
 
-    if (!config.SetSource(SYSCONFDIR"transmog.conf"))
+    if (!config.SetSource(SYSCONFDIR"dualspec.conf"))
     {
-        sLog.outError("Failed to open configuration file transmog.conf");
+        sLog.outError("Failed to open configuration file dualspec.conf");
         return false;
     }
 
-    enabled = config.GetBoolDefault("Transmog.Enable", false);
-    costMultiplier = config.GetFloatDefault("Transmog.CostMultiplier", 1.0f);
-    costFee = config.GetIntDefault("Transmog.CostFee", 0U);
-    tokenRequired = config.GetBoolDefault("Transmog.TokenRequired", false);
-    tokenEntry = config.GetIntDefault("Transmog.TokenEntry", 0U);
-    tokenAmount = config.GetIntDefault("Transmog.TokenAmount", 1U);
+    enabled = config.GetBoolDefault("Dualspec.Enable", false);
 
-    if (tokenRequired && !sObjectMgr.GetItemPrototype(tokenEntry))
-    {
-        sLog.outError("Transmog.TokenEntry (%u) does not exist. Disabling token requirements", tokenRequired);
-        tokenRequired = false;
-    }
-
-    if (tokenRequired && tokenAmount == 0)
-    {
-        sLog.outError("Transmog.TokenAmount set to %u but it needs a minimum of 1. Setting token amount to 1", tokenAmount);
-        tokenAmount = 1;
-    }
-
-    sLog.outString("Transmog configuration loaded");
+    sLog.outString("Dual Spec configuration loaded");
     return true;
 }

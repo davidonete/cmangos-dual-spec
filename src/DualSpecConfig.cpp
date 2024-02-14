@@ -1,6 +1,5 @@
 #include "DualSpecConfig.h"
 
-#include "Globals/ObjectMgr.h"
 #include "Log.h"
 #include "SystemConfig.h"
 

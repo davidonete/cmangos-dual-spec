@@ -33,10 +33,7 @@ if (BUILD_MANGOSBOTS OR BUILD_IKE3_BOTS)
 	)
 
 	add_definitions(-DENABLE_MANGOSBOTS)
-	
-	if (BUILD_IKE3_BOTS)
-		add_definitions(-DENABLE_PLAYERBOTS)
-	endif()
+	add_definitions(-DENABLE_PLAYERBOTS)
 endif()
 
 add_definitions(-DENABLE_DUALSPEC)

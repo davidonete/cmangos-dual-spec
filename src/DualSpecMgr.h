@@ -66,6 +66,7 @@ public:
     void Init();
 
     // Player hooks
+    bool OnPlayerItemUse(Player* player, Item* item);
     bool OnPlayerGossipHello(Player* player, Creature* creature);
     bool OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, uint32 sender, uint32 action, const std::string& code);
     bool OnPlayerGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action, const std::string& code);

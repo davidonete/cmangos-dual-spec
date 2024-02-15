@@ -9,6 +9,7 @@
 #define DUALSPEC_ITEM_ENTRY 17731
 
 #define DUALSPEC_NPC_TEXT 50700
+#define DUALSPEC_ITEM_TEXT 50701
 
 class DualSpecConfig
 {

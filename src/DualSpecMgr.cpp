@@ -178,10 +178,10 @@ void DualSpecMgr::OnPlayerCharacterDeleted(uint32 playerId)
 {
     if (sDualSpecConfig.enabled)
     {
-        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u'", playerId);
-        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent_name` WHERE `guid` = '%u'", playerId);
-        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_action` WHERE `guid` = '%u'", playerId);
-        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_characters` WHERE `guid` = '%u'", playerId);
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u';", playerId);
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent_name` WHERE `guid` = '%u';", playerId);
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_action` WHERE `guid` = '%u';", playerId);
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_characters` WHERE `guid` = '%u';", playerId);
     }
 }
 
@@ -193,7 +193,7 @@ bool DualSpecMgr::OnPlayerLoadActionButtons(Player* player, ActionButtonList& ac
         {
             const uint8 activeSpec = GetPlayerActiveSpec(player);
             const uint32 playerId = player->GetObjectGuid().GetCounter();
-            auto result = CharacterDatabase.PQuery("SELECT button, action, type, spec FROM custom_dualspec_action WHERE guid = '%u' ORDER BY button", playerId);
+            auto result = CharacterDatabase.PQuery("SELECT button, action, type, spec FROM custom_dualspec_action WHERE guid = '%u' ORDER BY button;", playerId);
             if (result)
             {
                 actionButtons.clear();
@@ -245,7 +245,7 @@ bool DualSpecMgr::OnPlayerSaveActionButtons(Player* player, ActionButtonList& ac
                 {
                     case ACTIONBUTTON_NEW:
                     {
-                        CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_action` (`guid`, `button`, `action`, `type`, `spec`) VALUES ('%u', '%u', '%u', '%u', '%u')",
+                        CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_action` (`guid`, `button`, `action`, `type`, `spec`) VALUES ('%u', '%u', '%u', '%u', '%u');",
                             playerId,
                             buttonId,
                             button.GetAction(),
@@ -260,7 +260,7 @@ bool DualSpecMgr::OnPlayerSaveActionButtons(Player* player, ActionButtonList& ac
 
                     case ACTIONBUTTON_CHANGED:
                     {
-                        CharacterDatabase.PExecute("UPDATE `custom_dualspec_action` SET `action` = '%u', `type` = '%u' WHERE `guid` = '%u' AND `button` = '%u' AND `spec` = '%u'",
+                        CharacterDatabase.PExecute("UPDATE `custom_dualspec_action` SET `action` = '%u', `type` = '%u' WHERE `guid` = '%u' AND `button` = '%u' AND `spec` = '%u';",
                             button.GetAction(),
                             button.GetType(),
                             playerId,
@@ -275,7 +275,7 @@ bool DualSpecMgr::OnPlayerSaveActionButtons(Player* player, ActionButtonList& ac
 
                     case ACTIONBUTTON_DELETED:
                     {
-                        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_action` WHERE `guid` = '%u' AND `button` = '%u' AND `spec` = '%u'",
+                        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_action` WHERE `guid` = '%u' AND `button` = '%u' AND `spec` = '%u';",
                             playerId,
                             buttonId,
                             activeSpec
@@ -305,7 +305,7 @@ void DualSpecMgr::LoadPlayerSpec(Player* player)
     if (player)
     {
         const uint32 playerId = player->GetObjectGuid().GetCounter();
-        auto result = CharacterDatabase.PQuery("SELECT `spec_count`, `active_spec` FROM  custom_dualspec_characters` WHERE `guid` = '%u'", playerId);
+        auto result = CharacterDatabase.PQuery("SELECT `spec_count`, `active_spec` FROM custom_dualspec_characters` WHERE `guid` = '%u';", playerId);
         if (result)
         {
             do
@@ -357,7 +357,7 @@ void DualSpecMgr::LoadPlayerTalents(Player* player)
     if (player)
     {
         const uint32 playerId = player->GetObjectGuid().GetCounter();
-        auto result = CharacterDatabase.PQuery("SELECT `spell`, `spec` FROM `custom_dualspec_talent` WHERE guid = '%u'", playerId);
+        auto result = CharacterDatabase.PQuery("SELECT `spell`, `spec` FROM `custom_dualspec_talent` WHERE guid = '%u';", playerId);
         if (result)
         {
             do
@@ -456,7 +456,7 @@ void DualSpecMgr::SavePlayerTalents(Player* player)
 
                 if (playerTalent.state == PLAYERSPELL_REMOVED || playerTalent.state == PLAYERSPELL_CHANGED)
                 {
-                    CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u' and `spell` = '%u' and `spec` = '%u'",
+                    CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u' and `spell` = '%u' and `spec` = '%u';",
                         playerId,
                         spellId,
                         playerTalent.spec
@@ -465,7 +465,7 @@ void DualSpecMgr::SavePlayerTalents(Player* player)
 
                 if (playerTalent.state == PLAYERSPELL_NEW || playerTalent.state == PLAYERSPELL_CHANGED)
                 {
-                    CharacterDatabase.PExecute("INSERT INTO custom_dualspec_talent (`guid`, `spell`, `spec`) VALUES ('%u', '%u', '%u')",
+                    CharacterDatabase.PExecute("INSERT INTO custom_dualspec_talent (`guid`, `spell`, `spec`) VALUES ('%u', '%u', '%u');",
                         playerId,
                         spellId,
                         playerTalent.spec

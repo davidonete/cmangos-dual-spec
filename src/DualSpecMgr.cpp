@@ -126,6 +126,8 @@ bool DualSpecMgr::OnPlayerGossipHello(Player* player, Creature* creature)
             if (creature->GetEntry() != DUALSPEC_NPC_ENTRY)
                 return false;
 
+            player->GetPlayerMenu()->ClearMenus();
+
             const uint32 cost = sDualSpecConfig.cost;
             const std::string costStr = std::to_string(cost > 0U ? cost / 10000U : 0U);
             const std::string areYouSure = player->GetSession()->GetMangosString(DUAL_SPEC_ARE_YOU_SURE_BEGIN) + costStr + player->GetSession()->GetMangosString(DUAL_SPEC_ARE_YOU_SURE_END);
@@ -139,7 +141,8 @@ bool DualSpecMgr::OnPlayerGossipHello(Player* player, Creature* creature)
                 player->GetPlayerMenu()->GetGossipMenu().AddMenuItem(GOSSIP_ICON_MONEY_BAG, purchase, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF, areYouSure, false);
                 player->GetPlayerMenu()->GetGossipMenu().AddMenuItem(GOSSIP_ICON_MONEY_BAG, costIs, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF, "", 0);
             }
-            else
+            
+            if (specCount > 1)
             {
                 const std::string changeSpec = player->GetSession()->GetMangosString(DUAL_SPEC_CHANGE_MY_SPEC);
                 player->GetPlayerMenu()->GetGossipMenu().AddMenuItem(GOSSIP_ICON_CHAT, changeSpec, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "", 0);
@@ -201,6 +204,8 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 se
             if (creature->GetEntry() != DUALSPEC_NPC_ENTRY)
                 return false;
 
+            player->GetPlayerMenu()->ClearMenus();
+
             if (!code.empty())
             {
                 std::string strCode = code;
@@ -216,8 +221,6 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 se
                 }
 
                 player->GetPlayerMenu()->CloseGossip();
-
-                OnPlayerGossipSelect(player, creature, sender, action, "");
             }
 
             switch (action)
@@ -332,6 +335,8 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Item* item, uint32 sender
             // Check if using dual spec item
             if (item->GetEntry() != DUALSPEC_ITEM_ENTRY)
                 return false;
+
+            player->GetPlayerMenu()->ClearMenus();
 
             if (!code.empty())
             {

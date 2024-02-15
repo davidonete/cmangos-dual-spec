@@ -2,6 +2,9 @@
 
 #include "Config/Config.h"
 
+#define MAX_TALENT_RANK 5
+#define MAX_TALENT_SPECS 2
+
 class DualSpecConfig
 {
 public:

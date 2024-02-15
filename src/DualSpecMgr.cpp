@@ -7,8 +7,6 @@
 void DualSpecMgr::Init()
 {
     sDualSpecConfig.Initialize();
-
-
 }
 
 bool DualSpecMgr::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, uint32 sender, uint32 action)
@@ -47,81 +45,120 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, u
 
 bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action)
 {
+    if (sDualSpecConfig.enabled)
+    {
+        if (player)
+        {
+
+        }
+    }
+
     return false;
 }
 
 bool DualSpecMgr::OnPlayerGossipSelect(Player* player, GameObject* gameObject, uint32 sender, uint32 action)
 {
+    if (sDualSpecConfig.enabled)
+    {
+        if (player)
+        {
+
+        }
+    }
+
     return false;
 }
 
 bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Item* item, uint32 sender, uint32 action)
 {
+    if (sDualSpecConfig.enabled)
+    {
+        if (player)
+        {
+
+        }
+    }
+
     return false;
 }
 
 void DualSpecMgr::OnPlayerLearnTalent(Player* player, uint32 spellId)
 {
-    AddPlayerTalent(player, spellId, GetPlayerActiveSpec(player), true);
+    if (sDualSpecConfig.enabled)
+    {
+        AddPlayerTalent(player, spellId, GetPlayerActiveSpec(player), true);
+    }
 }
 
 void DualSpecMgr::OnPlayerResetTalents(Player* player, uint32 cost)
 {
-    if (player)
+    if (sDualSpecConfig.enabled)
     {
-        DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(player);
-        for (unsigned int i = 0; i < sTalentStore.GetNumRows(); ++i)
+        if (player)
         {
-            TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
-            if (!talentInfo)
-                continue;
-
-            TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
-            if (!talentTabInfo)
-                continue;
-
-            if ((player->getClassMask() & talentTabInfo->ClassMask) == 0)
-                continue;
-
-            for (unsigned int j : talentInfo->RankID)
+            DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(player);
+            for (unsigned int i = 0; i < sTalentStore.GetNumRows(); ++i)
             {
-                if (j)
+                TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
+                if (!talentInfo)
+                    continue;
+
+                TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
+                if (!talentTabInfo)
+                    continue;
+
+                if ((player->getClassMask() & talentTabInfo->ClassMask) == 0)
+                    continue;
+
+                for (unsigned int j : talentInfo->RankID)
                 {
-                    auto talentIt = playerTalents.find(j);
-                    if (talentIt != playerTalents.end())
+                    if (j)
                     {
-                        talentIt->second.state = PLAYERSPELL_REMOVED;
+                        auto talentIt = playerTalents.find(j);
+                        if (talentIt != playerTalents.end())
+                        {
+                            talentIt->second.state = PLAYERSPELL_REMOVED;
+                        }
                     }
                 }
             }
-        }
 
-        SavePlayerTalents(player);
+            SavePlayerTalents(player);
+        }
     }
 }
 
 void DualSpecMgr::OnPlayerCharacterCreated(Player* player)
 {
-    if (player)
+    if (sDualSpecConfig.enabled)
     {
-        // Copy the default character action buttons into custom_dualspec_action
-        const uint32 playerId = player->GetObjectGuid().GetCounter();
-        CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_action` (`guid`, `spec`, `button`, `action`, `type`) SELECT `guid`, 0 AS `spec`, `button`, `action`, `type` FROM `character_action` WHERE `guid` = '%u';", playerId);
+        if (player)
+        {
+            // Copy the default character action buttons into custom_dualspec_action
+            const uint32 playerId = player->GetObjectGuid().GetCounter();
+            CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_action` (`guid`, `spec`, `button`, `action`, `type`) SELECT `guid`, 0 AS `spec`, `button`, `action`, `type` FROM `character_action` WHERE `guid` = '%u';", playerId);
     
-        // Create custom_dualspec_characters row
-        CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_characters` (`guid`) VALUES ('%u');", playerId);
+            // Create custom_dualspec_characters row
+            CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_characters` (`guid`) VALUES ('%u');", playerId);
+        }
     }
 }
 
 void DualSpecMgr::OnPlayerLoadFromDB(Player* player)
 {
-    LoadPlayerTalents(player);
-    LoadPlayerSpec(player);
+    if (sDualSpecConfig.enabled)
+    {
+        LoadPlayerTalents(player);
+        LoadPlayerSpec(player);
+    }
 }
 
 void DualSpecMgr::OnPlayerSaveToDB(Player* player)
 {
-    SavePlayerTalents(player);
+    if (sDualSpecConfig.enabled)
+    {
+        SavePlayerTalents(player);
+    }
 }
 
 void DualSpecMgr::OnPlayerCharacterDeleted(uint32 playerId)
@@ -134,38 +171,40 @@ void DualSpecMgr::OnPlayerCharacterDeleted(uint32 playerId)
 
 bool DualSpecMgr::OnPlayerLoadActionButtons(Player* player, ActionButtonList& actionButtons)
 {
-    if (player)
+    if (sDualSpecConfig.enabled)
     {
-        const uint8 activeSpec = GetPlayerActiveSpec(player);
-        const uint32 playerId = player->GetObjectGuid().GetCounter();
-        auto result = CharacterDatabase.PQuery("SELECT button, action, type, spec FROM custom_dualspec_action WHERE guid = '%u' ORDER BY button", playerId);
-        if (result)
+        if (player)
         {
-            actionButtons.clear();
-
-            do
+            const uint8 activeSpec = GetPlayerActiveSpec(player);
+            const uint32 playerId = player->GetObjectGuid().GetCounter();
+            auto result = CharacterDatabase.PQuery("SELECT button, action, type, spec FROM custom_dualspec_action WHERE guid = '%u' ORDER BY button", playerId);
+            if (result)
             {
-                Field* fields = result->Fetch();
-                const uint8 button = fields[0].GetUInt8();
-                const uint32 action = fields[1].GetUInt32();
-                const uint8 type = fields[2].GetUInt8();
-                const uint8 spec = fields[3].GetUInt8();
-                
-                if (spec == activeSpec)
-                {
-                    if (ActionButton* ab = player->addActionButton(button, action, type))
-                    {
-                        ab->uState = ACTIONBUTTON_UNCHANGED;
-                    }
-                    else
-                    {
-                        actionButtons[button].uState = ACTIONBUTTON_DELETED;
-                    }
-                }
-            }
-            while (result->NextRow());
+                actionButtons.clear();
 
-            return true;
+                do
+                {
+                    Field* fields = result->Fetch();
+                    const uint8 button = fields[0].GetUInt8();
+                    const uint32 action = fields[1].GetUInt32();
+                    const uint8 type = fields[2].GetUInt8();
+                    const uint8 spec = fields[3].GetUInt8();
+
+                    if (spec == activeSpec)
+                    {
+                        if (ActionButton* ab = player->addActionButton(button, action, type))
+                        {
+                            ab->uState = ACTIONBUTTON_UNCHANGED;
+                        }
+                        else
+                        {
+                            actionButtons[button].uState = ACTIONBUTTON_DELETED;
+                        }
+                    }
+                } while (result->NextRow());
+
+                return true;
+            }
         }
     }
 
@@ -174,63 +213,66 @@ bool DualSpecMgr::OnPlayerLoadActionButtons(Player* player, ActionButtonList& ac
 
 bool DualSpecMgr::OnPlayerSaveActionButtons(Player* player, ActionButtonList& actionButtons)
 {
-    if (player)
+    if (sDualSpecConfig.enabled)
     {
-        const uint32 playerId = player->GetObjectGuid().GetCounter();
-        const uint8 activeSpec = GetPlayerActiveSpec(player);
-
-        for (auto actionButtonIt = actionButtons.begin(); actionButtonIt != actionButtons.end();)
+        if (player)
         {
-            const uint8 buttonId = actionButtonIt->first;
-            ActionButton& button = actionButtonIt->second;
-            switch (button.uState)
+            const uint32 playerId = player->GetObjectGuid().GetCounter();
+            const uint8 activeSpec = GetPlayerActiveSpec(player);
+
+            for (auto actionButtonIt = actionButtons.begin(); actionButtonIt != actionButtons.end();)
             {
-                case ACTIONBUTTON_NEW:
+                const uint8 buttonId = actionButtonIt->first;
+                ActionButton& button = actionButtonIt->second;
+                switch (button.uState)
                 {
-                    CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_action` (`guid`, `button`, `action`, `type`, `spec`) VALUES ('%u', '%u', '%u', '%u', '%u')",
-                        playerId,
-                        buttonId,
-                        button.GetAction(),
-                        button.GetType(),
-                        activeSpec
-                    );
+                    case ACTIONBUTTON_NEW:
+                    {
+                        CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_action` (`guid`, `button`, `action`, `type`, `spec`) VALUES ('%u', '%u', '%u', '%u', '%u')",
+                            playerId,
+                            buttonId,
+                            button.GetAction(),
+                            button.GetType(),
+                            activeSpec
+                        );
                     
-                    button.uState = ACTIONBUTTON_UNCHANGED;
-                    ++actionButtonIt;
-                    break;
-                }
+                        button.uState = ACTIONBUTTON_UNCHANGED;
+                        ++actionButtonIt;
+                        break;
+                    }
 
-                case ACTIONBUTTON_CHANGED:
-                {
-                    CharacterDatabase.PExecute("UPDATE `custom_dualspec_action` SET `action` = '%u', `type` = '%u' WHERE `guid` = '%u' AND `button` = '%u' AND `spec` = '%u'",
-                        button.GetAction(),
-                        button.GetType(),
-                        playerId,
-                        buttonId,
-                        activeSpec
-                    );
+                    case ACTIONBUTTON_CHANGED:
+                    {
+                        CharacterDatabase.PExecute("UPDATE `custom_dualspec_action` SET `action` = '%u', `type` = '%u' WHERE `guid` = '%u' AND `button` = '%u' AND `spec` = '%u'",
+                            button.GetAction(),
+                            button.GetType(),
+                            playerId,
+                            buttonId,
+                            activeSpec
+                        );
                     
-                    button.uState = ACTIONBUTTON_UNCHANGED;
-                    ++actionButtonIt;
-                    break;
-                }
+                        button.uState = ACTIONBUTTON_UNCHANGED;
+                        ++actionButtonIt;
+                        break;
+                    }
 
-                case ACTIONBUTTON_DELETED:
-                {
-                    CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_action` WHERE `guid` = '%u' AND `button` = '%u' AND `spec` = '%u'",
-                        playerId,
-                        buttonId,
-                        activeSpec
-                    );
+                    case ACTIONBUTTON_DELETED:
+                    {
+                        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_action` WHERE `guid` = '%u' AND `button` = '%u' AND `spec` = '%u'",
+                            playerId,
+                            buttonId,
+                            activeSpec
+                        );
 
-                    actionButtons.erase(actionButtonIt++);
-                    break;
-                }
+                        actionButtons.erase(actionButtonIt++);
+                        break;
+                    }
 
-                default:
-                {
-                    ++actionButtonIt;
-                    break;
+                    default:
+                    {
+                        ++actionButtonIt;
+                        break;
+                    }
                 }
             }
         }
@@ -327,7 +369,7 @@ DualSpecPlayerTalentMap& DualSpecMgr::GetPlayerTalents(Player* player, int8 spec
     }
 
     MANGOS_ASSERT(false);
-    return DualSpecPlayerTalentMap{};
+    return playersTalents[0][0];
 }
 
 void DualSpecMgr::AddPlayerTalent(Player* player, uint32 spellId, uint8 spec, bool learned)

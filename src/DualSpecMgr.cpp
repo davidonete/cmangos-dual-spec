@@ -99,7 +99,24 @@ void DualSpecMgr::OnPlayerLearnTalent(Player* player, uint32 spellId)
 {
     if (sDualSpecConfig.enabled)
     {
-        AddPlayerTalent(player, spellId, GetPlayerActiveSpec(player), true);
+        if (player)
+        {
+            SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spellId);
+            if (!spellInfo)
+            {
+                sLog.outDetail("Player::addTalent: Non-existed in SpellStore spell #%u request.", spellId);
+                return;
+            }
+
+            if (!sSpellMgr.IsSpellValid(spellInfo, player, false))
+            {
+                sLog.outDetail("Player::addTalent: Broken spell #%u learning not allowed.", spellId);
+                return;
+            }
+
+            const uint32 playerId = player->GetObjectGuid().GetCounter();
+            AddPlayerTalent(playerId, spellId, GetPlayerActiveSpec(player), true);
+        }
     }
 }
 
@@ -157,12 +174,25 @@ void DualSpecMgr::OnPlayerCharacterCreated(Player* player)
     }
 }
 
-void DualSpecMgr::OnPlayerLoadFromDB(Player* player)
+void DualSpecMgr::OnPlayerLogIn(uint32 playerId)
 {
     if (sDualSpecConfig.enabled)
     {
-        LoadPlayerTalents(player);
-        LoadPlayerSpec(player);
+        LoadPlayerTalents(playerId);
+        LoadPlayerSpec(playerId);
+    }
+}
+
+void DualSpecMgr::OnPlayerLogOut(Player* player)
+{
+    if (sDualSpecConfig.enabled)
+    {
+        if (player)
+        {
+            const uint32 playerId = player->GetObjectGuid().GetCounter();
+            playersTalents.erase(playerId);
+            playersStatus.erase(playerId);
+        }
     }
 }
 
@@ -300,23 +330,19 @@ bool DualSpecMgr::OnPlayerSaveActionButtons(Player* player, ActionButtonList& ac
     return false;
 }
 
-void DualSpecMgr::LoadPlayerSpec(Player* player)
+void DualSpecMgr::LoadPlayerSpec(uint32 playerId)
 {
-    if (player)
+    auto result = CharacterDatabase.PQuery("SELECT `spec_count`, `active_spec` FROM `custom_dualspec_characters` WHERE `guid` = '%u';", playerId);
+    if (result)
     {
-        const uint32 playerId = player->GetObjectGuid().GetCounter();
-        auto result = CharacterDatabase.PQuery("SELECT `spec_count`, `active_spec` FROM custom_dualspec_characters` WHERE `guid` = '%u';", playerId);
-        if (result)
+        do
         {
-            do
-            {
-                Field* fields = result->Fetch();
-                const uint8 specCount = fields[0].GetUInt8();
-                const uint8 activeSpec = fields[1].GetUInt8();
-                playersStatus[playerId] = { specCount, activeSpec };
-            } 
-            while (result->NextRow());
-        }
+            Field* fields = result->Fetch();
+            const uint8 specCount = fields[0].GetUInt8();
+            const uint8 activeSpec = fields[1].GetUInt8();
+            playersStatus[playerId] = { specCount, activeSpec };
+        } 
+        while (result->NextRow());
     }
 }
 
@@ -352,23 +378,19 @@ uint8 DualSpecMgr::GetPlayerSpecCount(Player* player) const
     return 1;
 }
 
-void DualSpecMgr::LoadPlayerTalents(Player* player)
+void DualSpecMgr::LoadPlayerTalents(uint32 playerId)
 {
-    if (player)
+    auto result = CharacterDatabase.PQuery("SELECT `spell`, `spec` FROM `custom_dualspec_talent` WHERE `guid` = '%u';", playerId);
+    if (result)
     {
-        const uint32 playerId = player->GetObjectGuid().GetCounter();
-        auto result = CharacterDatabase.PQuery("SELECT `spell`, `spec` FROM `custom_dualspec_talent` WHERE guid = '%u';", playerId);
-        if (result)
+        do
         {
-            do
-            {
-                Field* fields = result->Fetch();
-                const uint32 spellId = fields[0].GetUInt32();
-                const uint8 spec = fields[1].GetUInt8();
-                AddPlayerTalent(player, spellId, spec, false);
-            } 
-            while (result->NextRow());
-        }
+            Field* fields = result->Fetch();
+            const uint32 spellId = fields[0].GetUInt32();
+            const uint8 spec = fields[1].GetUInt8();
+            AddPlayerTalent(playerId, spellId, spec, false);
+        } 
+        while (result->NextRow());
     }
 }
 
@@ -389,55 +411,38 @@ DualSpecPlayerTalentMap& DualSpecMgr::GetPlayerTalents(Player* player, int8 spec
     return playersTalents[0][0];
 }
 
-void DualSpecMgr::AddPlayerTalent(Player* player, uint32 spellId, uint8 spec, bool learned)
+void DualSpecMgr::AddPlayerTalent(uint32 playerId, uint32 spellId, uint8 spec, bool learned)
 {
-    if (player)
+    auto& playerTalents = playersTalents[playerId][spec];
+
+    auto talentIt = playerTalents.find(spellId);
+    if (talentIt != playerTalents.end())
     {
-        SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spellId);
-        if (!spellInfo)
+        talentIt->second.state = PLAYERSPELL_UNCHANGED;
+    }
+    else if (TalentSpellPos const* talentPos = GetTalentSpellPos(spellId))
+    {
+        if (TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentPos->talent_id))
         {
-            sLog.outDetail("Player::addTalent: Non-existed in SpellStore spell #%u request.", spellId);
-            return;
-        }
-
-        if (!sSpellMgr.IsSpellValid(spellInfo, player, false))
-        {
-            sLog.outDetail("Player::addTalent: Broken spell #%u learning not allowed.", spellId);
-            return;
-        }
-
-        const uint32 playerId = player->GetObjectGuid().GetCounter();
-        auto& playerTalents = playersTalents[playerId][spec];
-
-        auto talentIt = playerTalents.find(spellId);
-        if (talentIt != playerTalents.end())
-        {
-            talentIt->second.state = PLAYERSPELL_UNCHANGED;
-        }
-        else if (TalentSpellPos const* talentPos = GetTalentSpellPos(spellId))
-        {
-            if (TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentPos->talent_id))
+            for (uint8 rank = 0; rank < MAX_TALENT_RANK; ++rank)
             {
-                for (uint8 rank = 0; rank < MAX_TALENT_RANK; ++rank)
+                // skip learning spell and no rank spell case
+                uint32 rankSpellId = talentInfo->RankID[rank];
+                if (!rankSpellId || rankSpellId == spellId)
                 {
-                    // skip learning spell and no rank spell case
-                    uint32 rankSpellId = talentInfo->RankID[rank];
-                    if (!rankSpellId || rankSpellId == spellId)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    talentIt = playerTalents.find(rankSpellId);
-                    if (talentIt != playerTalents.end())
-                    {
-                        talentIt->second.state = PLAYERSPELL_REMOVED;
-                    }
+                talentIt = playerTalents.find(rankSpellId);
+                if (talentIt != playerTalents.end())
+                {
+                    talentIt->second.state = PLAYERSPELL_REMOVED;
                 }
             }
-
-            const uint8 state = learned ? PLAYERSPELL_NEW : PLAYERSPELL_UNCHANGED;
-            playerTalents[spellId] = { state, spec };
         }
+
+        const uint8 state = learned ? PLAYERSPELL_NEW : PLAYERSPELL_UNCHANGED;
+        playerTalents[spellId] = { state, spec };
     }
 }
 

@@ -46,21 +46,22 @@ public:
     void OnPlayerLearnTalent(Player* player, uint32 spellId);
     void OnPlayerResetTalents(Player* player, uint32 cost);
 
+    void OnPlayerLogIn(uint32 playerId);
+    void OnPlayerLogOut(Player* player);
     void OnPlayerCharacterCreated(Player* player);
     void OnPlayerCharacterDeleted(uint32 playerId);
-    void OnPlayerLoadFromDB(Player* player);
     void OnPlayerSaveToDB(Player* player);
     bool OnPlayerLoadActionButtons(Player* player, ActionButtonList& actionButtons);
     bool OnPlayerSaveActionButtons(Player* player, ActionButtonList& actionButtons);
 
 private:
-    void LoadPlayerSpec(Player* player);
+    void LoadPlayerSpec(uint32 playerId);
     uint8 GetPlayerActiveSpec(Player* player) const;
     uint8 GetPlayerSpecCount(Player* player) const;
 
-    void LoadPlayerTalents(Player* player);
+    void LoadPlayerTalents(uint32 playerId);
     DualSpecPlayerTalentMap& GetPlayerTalents(Player* player, int8 spec = -1);
-    void AddPlayerTalent(Player* player, uint32 spellId, uint8 spec, bool learned);
+    void AddPlayerTalent(uint32 playerId, uint32 spellId, uint8 spec, bool learned);
     void SavePlayerTalents(Player* player);
 
     void SendPlayerActionButtons(const Player* player, bool clear) const;

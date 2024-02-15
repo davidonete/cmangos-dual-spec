@@ -7,6 +7,19 @@
 void DualSpecMgr::Init()
 {
     sDualSpecConfig.Initialize();
+
+    if (sDualSpecConfig.enabled)
+    {
+        // Cleanup non existent characters
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE NOT EXISTS (SELECT 1 FROM `characters` WHERE `characters`.`guid` = `custom_dualspec_talent`.`guid`);");
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent_name` WHERE NOT EXISTS (SELECT 1 FROM `characters` WHERE `characters`.`guid` = `custom_dualspec_talent_name`.`guid`);");
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_action` WHERE NOT EXISTS (SELECT 1 FROM `characters` WHERE `characters`.`guid` = `custom_dualspec_action`.`guid`);");
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_characters` WHERE NOT EXISTS (SELECT 1 FROM `characters` WHERE `characters`.`guid` = `custom_dualspec_characters`.`guid`);");
+
+        // Add current characters
+        CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_characters` (`guid`) SELECT `guid` FROM `characters` WHERE NOT EXISTS (SELECT 1 FROM `custom_dualspec_characters` WHERE `custom_dualspec_characters`.`guid` = `characters`.`guid`);");
+        CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_action` (`guid`, `spec`, `button`, `action`, `type`) SELECT `guid`, 0 AS `spec`, `button`, `action`, `type` FROM `character_action` WHERE NOT EXISTS (SELECT 1 FROM `custom_dualspec_action` WHERE `custom_dualspec_action`.`guid` = `character_action`.`guid`);");
+    }
 }
 
 bool DualSpecMgr::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, uint32 sender, uint32 action)
@@ -163,10 +176,13 @@ void DualSpecMgr::OnPlayerSaveToDB(Player* player)
 
 void DualSpecMgr::OnPlayerCharacterDeleted(uint32 playerId)
 {
-    CharacterDatabase.PExecute("DELETE FROM custom_dualspec_talent WHERE guid = '%u'", playerId);
-    CharacterDatabase.PExecute("DELETE FROM custom_dualspec_talent_name WHERE guid = '%u'", playerId);
-    CharacterDatabase.PExecute("DELETE FROM custom_dualspec_action WHERE guid = '%u'", playerId);
-    CharacterDatabase.PExecute("DELETE FROM custom_dualspec_characters WHERE guid = '%u'", playerId);
+    if (sDualSpecConfig.enabled)
+    {
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u'", playerId);
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent_name` WHERE `guid` = '%u'", playerId);
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_action` WHERE `guid` = '%u'", playerId);
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_characters` WHERE `guid` = '%u'", playerId);
+    }
 }
 
 bool DualSpecMgr::OnPlayerLoadActionButtons(Player* player, ActionButtonList& actionButtons)
@@ -201,7 +217,8 @@ bool DualSpecMgr::OnPlayerLoadActionButtons(Player* player, ActionButtonList& ac
                             actionButtons[button].uState = ACTIONBUTTON_DELETED;
                         }
                     }
-                } while (result->NextRow());
+                } 
+                while (result->NextRow());
 
                 return true;
             }
@@ -235,7 +252,7 @@ bool DualSpecMgr::OnPlayerSaveActionButtons(Player* player, ActionButtonList& ac
                             button.GetType(),
                             activeSpec
                         );
-                    
+
                         button.uState = ACTIONBUTTON_UNCHANGED;
                         ++actionButtonIt;
                         break;
@@ -250,7 +267,7 @@ bool DualSpecMgr::OnPlayerSaveActionButtons(Player* player, ActionButtonList& ac
                             buttonId,
                             activeSpec
                         );
-                    
+
                         button.uState = ACTIONBUTTON_UNCHANGED;
                         ++actionButtonIt;
                         break;
@@ -364,7 +381,7 @@ DualSpecPlayerTalentMap& DualSpecMgr::GetPlayerTalents(Player* player, int8 spec
         if (playerTalentSpecIt != playersTalents.end())
         {
             spec = spec >= 0 ? spec : GetPlayerActiveSpec(player);
-            return playersTalents[playerId][spec];
+            return playerTalentSpecIt->second[spec];
         }
     }
 

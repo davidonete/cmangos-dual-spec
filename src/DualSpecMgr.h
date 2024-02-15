@@ -58,6 +58,7 @@ private:
     void LoadPlayerSpec(uint32 playerId);
     uint8 GetPlayerActiveSpec(Player* player) const;
     uint8 GetPlayerSpecCount(Player* player) const;
+    void SavePlayerSpec(Player* player);
 
     void LoadPlayerTalents(uint32 playerId);
     DualSpecPlayerTalentMap& GetPlayerTalents(Player* player, int8 spec = -1);

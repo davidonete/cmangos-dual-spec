@@ -164,12 +164,14 @@ void DualSpecMgr::OnPlayerCharacterCreated(Player* player)
     {
         if (player)
         {
-            // Copy the default character action buttons into custom_dualspec_action
             const uint32 playerId = player->GetObjectGuid().GetCounter();
-            CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_action` (`guid`, `spec`, `button`, `action`, `type`) SELECT `guid`, 0 AS `spec`, `button`, `action`, `type` FROM `character_action` WHERE `guid` = '%u';", playerId);
-    
+
             // Create custom_dualspec_characters row
             CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_characters` (`guid`) VALUES ('%u');", playerId);
+
+            // Create the default data
+            playersTalents[playerId];
+            playersStatus[playerId] = { 1, 0 };
         }
     }
 }
@@ -201,6 +203,7 @@ void DualSpecMgr::OnPlayerSaveToDB(Player* player)
     if (sDualSpecConfig.enabled)
     {
         SavePlayerTalents(player);
+        SavePlayerSpec(player);
     }
 }
 
@@ -376,6 +379,18 @@ uint8 DualSpecMgr::GetPlayerSpecCount(Player* player) const
 
     MANGOS_ASSERT(false);
     return 1;
+}
+
+void DualSpecMgr::SavePlayerSpec(Player* player)
+{
+    if (player)
+    {
+        CharacterDatabase.PExecute("UPDATE `custom_dualspec_characters` SET `spec_count` = '%u', `active_spec` = '%u' WHERE `guid` = '%u';",
+            GetPlayerSpecCount(player),
+            GetPlayerActiveSpec(player),
+            player->GetObjectGuid().GetCounter()
+        );
+    }
 }
 
 void DualSpecMgr::LoadPlayerTalents(uint32 playerId)

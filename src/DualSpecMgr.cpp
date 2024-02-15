@@ -127,30 +127,11 @@ void DualSpecMgr::OnPlayerResetTalents(Player* player, uint32 cost)
         if (player)
         {
             DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(player);
-            for (unsigned int i = 0; i < sTalentStore.GetNumRows(); ++i)
+            for (auto playerTalentsIt = playerTalents.begin(); playerTalentsIt != playerTalents.end();)
             {
-                TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
-                if (!talentInfo)
-                    continue;
-
-                TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
-                if (!talentTabInfo)
-                    continue;
-
-                if ((player->getClassMask() & talentTabInfo->ClassMask) == 0)
-                    continue;
-
-                for (unsigned int j : talentInfo->RankID)
-                {
-                    if (j)
-                    {
-                        auto talentIt = playerTalents.find(j);
-                        if (talentIt != playerTalents.end())
-                        {
-                            talentIt->second.state = PLAYERSPELL_REMOVED;
-                        }
-                    }
-                }
+                const uint32 spellId = playerTalentsIt->first;
+                DualSpecPlayerTalent& playerTalent = playerTalentsIt->second;
+                playerTalent.state = PLAYERSPELL_REMOVED;
             }
 
             SavePlayerTalents(player);
@@ -395,6 +376,9 @@ void DualSpecMgr::SavePlayerSpec(Player* player)
 
 void DualSpecMgr::LoadPlayerTalents(uint32 playerId)
 {
+    // Create player talents container for later use
+    playersTalents[playerId];
+
     auto result = CharacterDatabase.PQuery("SELECT `spell`, `spec` FROM `custom_dualspec_talent` WHERE `guid` = '%u';", playerId);
     if (result)
     {

@@ -497,6 +497,23 @@ uint8 DualSpecMgr::GetPlayerActiveSpec(Player* player) const
     return 0;
 }
 
+void DualSpecMgr::SetPlayerActiveSpec(Player* player, uint8 spec)
+{
+    if (player)
+    {
+        const uint32 playerId = player->GetObjectGuid().GetCounter();
+        auto playerStatusIt = playersStatus.find(playerId);
+        if (playerStatusIt != playersStatus.end())
+        {
+            playerStatusIt->second.activeSpec = spec;
+        }
+        else
+        {
+            MANGOS_ASSERT(false);
+        }
+    }
+}
+
 uint8 DualSpecMgr::GetPlayerSpecCount(Player* player) const
 {
     if (player)
@@ -632,6 +649,21 @@ void DualSpecMgr::LoadPlayerTalents(uint32 playerId)
     }
 }
 
+bool DualSpecMgr::PlayerHasTalent(Player* player, uint32 spellId, uint8 spec)
+{
+    if (player)
+    {
+        DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(player, spec);
+        auto it = playerTalents.find(spellId);
+        if (it != playerTalents.end())
+        {
+            return it->second.state != PLAYERSPELL_REMOVED;
+        }
+    }
+
+    return false;
+}
+
 DualSpecPlayerTalentMap& DualSpecMgr::GetPlayerTalents(Player* player, int8 spec)
 {
     if (player)
@@ -743,6 +775,170 @@ void DualSpecMgr::SendPlayerActionButtons(const Player* player, bool clear) cons
         {
             player->SendInitialActionButtons();
         }
+    }
+}
+
+void DualSpecMgr::ActivatePlayerSpec(Player* player, uint8 spec)
+{
+    if (player)
+    {
+        if (GetPlayerActiveSpec(player) == spec)
+            return;
+
+        if (spec > GetPlayerSpecCount(player))
+            return;
+
+        if (player->IsNonMeleeSpellCasted(false))
+        {
+            player->InterruptNonMeleeSpells(false);
+        }
+
+        // Save current Actions
+        player->SaveToDB();
+
+        // Clear action bars
+        SendPlayerActionButtons(player, true);
+
+        // TO-DO: We need more research to know what happens with warlock's reagent
+        if (Pet* pet = player->GetPet())
+        {
+            player->RemovePet(PET_SAVE_NOT_IN_SLOT);
+        }
+
+        player->ClearComboPointHolders();
+        player->ClearAllReactives();
+        player->UnsummonAllTotems();
+
+        // REMOVE TALENTS
+        for (uint32 talentId = 0; talentId < sTalentStore.GetNumRows(); talentId++)
+        {
+            TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentId);
+            if (!talentInfo)
+                continue;
+
+            TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
+            if (!talentTabInfo)
+                continue;
+
+            // unlearn only talents for character class
+            // some spell learned by one class as normal spells or know at creation but another class learn it as talent,
+            // to prevent unexpected lost normal learned spell skip another class talents
+            if ((player->getClassMask() & talentTabInfo->ClassMask) == 0)
+                continue;
+
+            for (int8 rank = 0; rank < MAX_TALENT_RANK; rank++)
+            {
+                for (PlayerSpellMap::iterator itr = player->GetSpellMap().begin(); itr != player->GetSpellMap().end();)
+                {
+                    if (itr->second.state == PLAYERSPELL_REMOVED || itr->second.disabled || itr->first == 33983 || itr->first == 33982 || itr->first == 33986 || itr->first == 33987) // skip mangle rank 2 and 3
+                    {
+                        ++itr;
+                        continue;
+                    }
+
+                    // remove learned spells (all ranks)
+                    uint32 itrFirstId = sSpellMgr.GetFirstSpellInChain(itr->first);
+
+                    // unlearn if first rank is talent or learned by talent
+                    if (itrFirstId == talentInfo->RankID[rank] || sSpellMgr.IsSpellLearnToSpell(talentInfo->RankID[rank], itrFirstId))
+                    {
+                        player->removeSpell(itr->first, true);
+                        itr = player->GetSpellMap().begin();
+                        continue;
+                    }
+                    else
+                    {
+                        ++itr;
+                    }
+                }
+            }
+        }
+
+        SetPlayerActiveSpec(player, spec);
+        uint32 spentTalents = 0;
+
+        // Add Talents
+        for (uint32 talentId = 0; talentId < sTalentStore.GetNumRows(); talentId++)
+        {
+            TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentId);
+            if (!talentInfo)
+                continue;
+
+            TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
+            if (!talentTabInfo)
+                continue;
+
+            // Learn only talents for character class
+            if ((player->getClassMask() & talentTabInfo->ClassMask) == 0)
+                continue;
+
+            for (int8 rank = 0; rank < MAX_TALENT_RANK; rank++)
+            {
+                // Skip non-existent talent ranks
+                if (talentInfo->RankID[rank] == 0)
+                    continue;
+
+                // If the talent can be found in the newly activated PlayerTalentMap
+                if (PlayerHasTalent(player, talentInfo->RankID[rank], spec))
+                {
+                    // Ensure both versions of druid mangle spell are properly relearned
+                    if (talentInfo->RankID[rank] == 33917) 
+                    {
+                        player->learnSpell(33876, false, true);         // Mangle (Cat) (Rank 1)
+                        player->learnSpell(33878, false, true);         // Mangle (Bear) (Rank 1)
+                    }
+
+                    player->learnSpell(talentInfo->RankID[rank], false, true);
+                    spentTalents += (rank + 1);             // increment the spentTalents count
+                }
+            }
+        }
+
+        //m_usedTalentCount = spentTalents;
+        //player->InitTalentForLevel();
+        {
+            uint32 level = player->GetLevel();
+            // talents base at level diff ( talents = level - 9 but some can be used already)
+            if (level < 10)
+            {
+                // Remove all talent points
+                if (spentTalents > 0)                          // Free any used talents
+                {
+                    player->resetTalents(true);
+                    player->SetFreeTalentPoints(0);
+                }
+            }
+            else
+            {
+                uint32 talentPointsForLevel = player->CalculateTalentsPoints();
+
+                // if used more that have then reset
+                if (spentTalents > talentPointsForLevel)
+                {
+                    if (player->GetSession()->GetSecurity() < SEC_ADMINISTRATOR)
+                    {
+                        player->resetTalents(true);
+                    }
+                    else
+                    {
+                        player->SetFreeTalentPoints(0);
+                    }
+                }
+                // else update amount of free points
+                else
+                {
+                    player->SetFreeTalentPoints(talentPointsForLevel - spentTalents);
+                }
+            }
+        }
+
+        // Load new Action Bar
+        //QueryResult* actionResult = CharacterDatabase.PQuery("SELECT button, action, type FROM character_action WHERE guid = '%u' AND spec = '%u' ORDER BY button", GetGUIDLow(), m_activeSpec);
+        //_LoadActions(actionResult);
+
+        //SendActionButtons(1);
+        // Need to relog player ???: TODO fix packet sending
+        player->GetSession()->LogoutPlayer();
     }
 }
 

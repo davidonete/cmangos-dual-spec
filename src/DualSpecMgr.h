@@ -85,6 +85,7 @@ public:
 private:
     void LoadPlayerSpec(uint32 playerId);
     uint8 GetPlayerActiveSpec(Player* player) const;
+    void SetPlayerActiveSpec(Player* player, uint8 spec);
     uint8 GetPlayerSpecCount(Player* player) const;
     void SetPlayerSpecCount(Player* player, uint8 count);
     void SavePlayerSpec(Player* player);
@@ -95,6 +96,7 @@ private:
     void SavePlayerSpecNames(Player* player);
 
     void LoadPlayerTalents(uint32 playerId);
+    bool PlayerHasTalent(Player* player, uint32 spellId, uint8 spec);
     DualSpecPlayerTalentMap& GetPlayerTalents(Player* player, int8 spec = -1);
     void AddPlayerTalent(uint32 playerId, uint32 spellId, uint8 spec, bool learned);
     void SavePlayerTalents(Player* player);

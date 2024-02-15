@@ -5,6 +5,7 @@
 
 DualSpecConfig::DualSpecConfig()
 : enabled(false)
+, cost(0U)
 {
     
 }
@@ -22,6 +23,7 @@ bool DualSpecConfig::Initialize()
     }
 
     enabled = config.GetBoolDefault("Dualspec.Enable", false);
+    cost = config.GetIntDefault("Dualspec.Cost", 10000U);
 
     sLog.outString("Dual Spec configuration loaded");
     return true;

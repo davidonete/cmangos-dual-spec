@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <map>
 
+class Creature;
 class GameObject;
 class Item;
 class ObjectGuid;
@@ -15,6 +16,32 @@ class Player;
 class Unit;
 
 struct ActionButton;
+
+enum DualSpecMessages
+{
+    DUAL_SPEC_DESCRIPTION = 12000,
+    DUAL_SPEC_COST_IS,
+    DUAL_SPEC_CHANGE_MY_SPEC,
+    DUAL_SPEC_NO_GOLD_UNLOCK,
+    DUAL_SPEC_ARE_YOU_SURE_BEGIN,
+    DUAL_SPEC_ARE_YOU_SURE_END,
+    DUAL_SPEC_ALREADY_ON_SPEC,
+    DUAL_SPEC_ACTIVATE,
+    DUAL_SPEC_RENAME,
+    DUAL_SPEC_UNNAMED,
+    DUAL_SPEC_ACTIVE,
+    DUAL_SPEC_ERR_COMBAT,
+    DUAL_SPEC_ERR_INSTANCE,
+    DUAL_SPEC_ERR_MOUNT,
+    DUAL_SPEC_ERR_DEAD,
+    DUAL_SPEC_ERR_UNLOCK,
+    DUAL_SPEC_ERR_LEVEL,
+    DUAL_SPEC_ACTIVATE_COLOR,
+    DUAL_SPEC_RENAME_COLOR,
+    DUAL_SPEC_ARE_YOU_SURE_SWITCH,
+    DUAL_SPEC_PURCHASE,
+    DUAL_SPEC_ERR_ITEM_CREATE,
+};
 
 struct DualSpecPlayerTalent
 {
@@ -39,10 +66,11 @@ public:
     void Init();
 
     // Player hooks
-    bool OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, uint32 sender, uint32 action);
-    bool OnPlayerGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action);
-    bool OnPlayerGossipSelect(Player* player, GameObject* gameObject, uint32 sender, uint32 action);
-    bool OnPlayerGossipSelect(Player* player, Item* item, uint32 sender, uint32 action);
+    bool OnPlayerGossipHello(Player* player, Creature* creature);
+    bool OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, uint32 sender, uint32 action, const std::string& code);
+    bool OnPlayerGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action, const std::string& code);
+    bool OnPlayerGossipSelect(Player* player, GameObject* gameObject, uint32 sender, uint32 action, const std::string& code);
+    bool OnPlayerGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code);
     void OnPlayerLearnTalent(Player* player, uint32 spellId);
     void OnPlayerResetTalents(Player* player, uint32 cost);
 
@@ -58,7 +86,13 @@ private:
     void LoadPlayerSpec(uint32 playerId);
     uint8 GetPlayerActiveSpec(Player* player) const;
     uint8 GetPlayerSpecCount(Player* player) const;
+    void SetPlayerSpecCount(Player* player, uint8 count);
     void SavePlayerSpec(Player* player);
+
+    void LoadPlayerSpecNames(uint32 playerId);
+    const std::string& GetPlayerSpecName(Player* player, uint8 spec) const;
+    void SetPlayerSpecName(Player* player, uint8 spec, const std::string& name);
+    void SavePlayerSpecNames(Player* player);
 
     void LoadPlayerTalents(uint32 playerId);
     DualSpecPlayerTalentMap& GetPlayerTalents(Player* player, int8 spec = -1);
@@ -67,9 +101,13 @@ private:
 
     void SendPlayerActionButtons(const Player* player, bool clear) const;
 
+    void ActivatePlayerSpec(Player* player, uint8 spec);
+    void AddDualSpecItem(Player* player);
+
 private:
     std::map<uint32, DualSpecPlayerTalentMap[MAX_TALENT_SPECS]> playersTalents;
     std::map<uint32, DualSpecPlayerStatus> playersStatus;
+    std::map<uint32, std::string[MAX_TALENT_SPECS]> playersSpecNames;
 };
 
 #define sDualSpecMgr MaNGOS::Singleton<DualSpecMgr>::Instance()

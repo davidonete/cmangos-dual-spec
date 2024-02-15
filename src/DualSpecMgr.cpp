@@ -1,7 +1,10 @@
 #include "DualSpecMgr.h"
 
+#include "AI/ScriptDevAI/include/sc_gossip.h"
+#include "Entities/GossipDef.h"
 #include "Entities/ObjectGuid.h"
 #include "Entities/Player.h"
+#include "Globals/ObjectMgr.h"
 #include "Spells/SpellMgr.h"
 
 void DualSpecMgr::Init()
@@ -22,7 +25,46 @@ void DualSpecMgr::Init()
     }
 }
 
-bool DualSpecMgr::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, uint32 sender, uint32 action)
+bool DualSpecMgr::OnPlayerGossipHello(Player* player, Creature* creature)
+{
+    if (sDualSpecConfig.enabled)
+    {
+        if (player && creature)
+        {
+            // Check if speaking with dual spec npc
+            if (creature->GetEntry() != DUALSPEC_NPC_ENTRY)
+                return false;
+
+            const uint32 cost = sDualSpecConfig.cost;
+            const std::string costStr = std::to_string(cost > 0U ? cost / 10000U : 0U);
+            const std::string areYouSure = player->GetSession()->GetMangosString(DUAL_SPEC_ARE_YOU_SURE_BEGIN) + costStr + player->GetSession()->GetMangosString(DUAL_SPEC_ARE_YOU_SURE_END);
+
+            const uint8 specCount = GetPlayerSpecCount(player);
+            if (specCount < MAX_TALENT_SPECS)
+            {
+                // Display cost
+                const std::string purchase = player->GetSession()->GetMangosString(DUAL_SPEC_PURCHASE);
+                const std::string costIs = player->GetSession()->GetMangosString(DUAL_SPEC_COST_IS) + costStr + " g";
+                player->GetPlayerMenu()->GetGossipMenu().AddMenuItem(GOSSIP_ICON_MONEY_BAG, purchase, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF, areYouSure, false);
+                player->GetPlayerMenu()->GetGossipMenu().AddMenuItem(GOSSIP_ICON_MONEY_BAG, costIs, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF, "", 0);
+            }
+            else
+            {
+                const std::string changeSpec = player->GetSession()->GetMangosString(DUAL_SPEC_CHANGE_MY_SPEC);
+                player->GetPlayerMenu()->GetGossipMenu().AddMenuItem(GOSSIP_ICON_CHAT, changeSpec, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "", 0);
+                if (!player->GetItemCount(DUALSPEC_ITEM_ENTRY, true))
+                {
+                    AddDualSpecItem(player);
+                }
+            }
+
+            player->GetPlayerMenu()->SendGossipMenu(DUALSPEC_NPC_TEXT, creature->GetObjectGuid());
+            return true;
+        }
+    }
+}
+
+bool DualSpecMgr::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, uint32 sender, uint32 action, const std::string& code)
 {
     // TO DO: Move this to generic module system once done
     if (player)
@@ -32,7 +74,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, u
             Creature* creature = player->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_NONE);
             if (creature)
             {
-                return OnPlayerGossipSelect(player, creature, sender, action);
+                return OnPlayerGossipSelect(player, creature, sender, action, code);
             }
         }
         else if (guid.IsGameObject())
@@ -40,7 +82,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, u
             GameObject* gameObject = player->GetGameObjectIfCanInteractWith(guid);
             if (gameObject)
             {
-                return OnPlayerGossipSelect(player, gameObject, sender, action);
+                return OnPlayerGossipSelect(player, gameObject, sender, action, code);
             }
         }
         else if (guid.IsItem())
@@ -48,7 +90,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, u
             Item* item = player->GetItemByGuid(guid);
             if (item)
             {
-                return OnPlayerGossipSelect(player, item, sender, action);
+                return OnPlayerGossipSelect(player, item, sender, action, code);
             }
         }
     }
@@ -56,7 +98,126 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, u
     return false;
 }
 
-bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action)
+bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action, const std::string& code)
+{
+    if (sDualSpecConfig.enabled)
+    {
+        if (player && creature)
+        {
+            // Check if speaking with dual spec npc
+            if (creature->GetEntry() != DUALSPEC_NPC_ENTRY)
+                return false;
+
+            if (!code.empty())
+            {
+                std::string strCode = code;
+                CharacterDatabase.escape_string(strCode);
+
+                if (action == GOSSIP_ACTION_INFO_DEF + 10)
+                {
+                    SetPlayerSpecName(player, 0, strCode);
+                }
+                else if (action == GOSSIP_ACTION_INFO_DEF + 11)
+                {
+                    SetPlayerSpecName(player, 1, strCode);
+                }
+
+                player->GetPlayerMenu()->CloseGossip();
+
+                OnPlayerGossipSelect(player, creature, sender, action, "");
+            }
+
+            switch (action)
+            {
+                case GOSSIP_ACTION_INFO_DEF:
+                {
+                    if (player->GetMoney() >= sDualSpecConfig.cost)
+                    {
+                        player->ModifyMoney(-int32(sDualSpecConfig.cost));
+                        SetPlayerSpecCount(player, GetPlayerSpecCount(player) + 1);
+                        OnPlayerGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "");
+                        AddDualSpecItem(player);
+                    }
+                    else
+                    {
+                        const std::string msg = player->GetSession()->GetMangosString(DUAL_SPEC_NO_GOLD_UNLOCK);
+                        player->GetSession()->SendNotification(msg.c_str());
+                    }
+
+                    break;
+                }
+
+                case GOSSIP_ACTION_INFO_DEF + 1:
+                {
+                    if (GetPlayerActiveSpec(player) == 0)
+                    {
+                        player->GetPlayerMenu()->CloseGossip();
+                        player->GetSession()->SendNotification(player->GetSession()->GetMangosString(DUAL_SPEC_ALREADY_ON_SPEC));
+                        OnPlayerGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "");
+                    }
+                    else
+                    {
+                        ActivatePlayerSpec(player, 0);
+                    }
+
+                    break;
+                }
+
+                case GOSSIP_ACTION_INFO_DEF + 2:
+                {
+                    if (GetPlayerActiveSpec(player) == 1)
+                    {
+                        player->GetPlayerMenu()->CloseGossip();
+                        player->GetSession()->SendNotification(player->GetSession()->GetMangosString(DUAL_SPEC_ALREADY_ON_SPEC));
+                        OnPlayerGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "");
+                    }
+                    else
+                    {
+                        ActivatePlayerSpec(player, 1);
+                    }
+
+                    break;
+                }
+
+                case GOSSIP_ACTION_INFO_DEF + 5:
+                {
+                    const uint8 activeSpec = GetPlayerActiveSpec(player);
+                    const uint8 specCount = GetPlayerSpecCount(player);
+                    for (uint8 spec = 0; spec < specCount; ++spec)
+                    {
+                        const std::string& specName = GetPlayerSpecName(player, spec);
+
+                        std::stringstream specNameString;
+                        specNameString << player->GetSession()->GetMangosString(DUAL_SPEC_ACTIVATE);
+                        specNameString << (specName.empty() ? player->GetSession()->GetMangosString(DUAL_SPEC_UNNAMED) : specName);
+                        specNameString << (spec == activeSpec ? player->GetSession()->GetMangosString(DUAL_SPEC_ACTIVE) : "");
+                        player->GetPlayerMenu()->GetGossipMenu().AddMenuItem(GOSSIP_ICON_CHAT, specNameString.str(), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + (1 + spec), "", 0);
+                    }
+
+                    for (uint8 spec = 0; spec < specCount; ++spec)
+                    {
+                        const std::string& specName = GetPlayerSpecName(player, spec);
+
+                        std::stringstream specNameString;
+                        specNameString << player->GetSession()->GetMangosString(DUAL_SPEC_RENAME);
+                        specNameString << (specName.empty() ? player->GetSession()->GetMangosString(DUAL_SPEC_UNNAMED) : specName);
+                        specNameString << (spec == activeSpec ? player->GetSession()->GetMangosString(DUAL_SPEC_ACTIVE) : "");
+                        player->GetPlayerMenu()->GetGossipMenu().AddMenuItem(GOSSIP_ICON_TALK, specNameString.str(), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + (10 + spec), "", true);
+                    }
+
+                    player->GetPlayerMenu()->SendGossipMenu(DUALSPEC_NPC_TEXT, creature->GetObjectGuid());
+                    break;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool DualSpecMgr::OnPlayerGossipSelect(Player* player, GameObject* gameObject, uint32 sender, uint32 action, const std::string& code)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -69,20 +230,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 se
     return false;
 }
 
-bool DualSpecMgr::OnPlayerGossipSelect(Player* player, GameObject* gameObject, uint32 sender, uint32 action)
-{
-    if (sDualSpecConfig.enabled)
-    {
-        if (player)
-        {
-
-        }
-    }
-
-    return false;
-}
-
-bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Item* item, uint32 sender, uint32 action)
+bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -127,10 +275,10 @@ void DualSpecMgr::OnPlayerResetTalents(Player* player, uint32 cost)
         if (player)
         {
             DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(player);
-            for (auto playerTalentsIt = playerTalents.begin(); playerTalentsIt != playerTalents.end();)
+            for (auto& playerTalentsPair : playerTalents)
             {
-                const uint32 spellId = playerTalentsIt->first;
-                DualSpecPlayerTalent& playerTalent = playerTalentsIt->second;
+                const uint32 spellId = playerTalentsPair.first;
+                DualSpecPlayerTalent& playerTalent = playerTalentsPair.second;
                 playerTalent.state = PLAYERSPELL_REMOVED;
             }
 
@@ -163,6 +311,7 @@ void DualSpecMgr::OnPlayerLogIn(uint32 playerId)
     {
         LoadPlayerTalents(playerId);
         LoadPlayerSpec(playerId);
+        LoadPlayerSpecNames(playerId);
     }
 }
 
@@ -175,6 +324,7 @@ void DualSpecMgr::OnPlayerLogOut(Player* player)
             const uint32 playerId = player->GetObjectGuid().GetCounter();
             playersTalents.erase(playerId);
             playersStatus.erase(playerId);
+            playersSpecNames.erase(playerId);
         }
     }
 }
@@ -185,6 +335,7 @@ void DualSpecMgr::OnPlayerSaveToDB(Player* player)
     {
         SavePlayerTalents(player);
         SavePlayerSpec(player);
+        SavePlayerSpecNames(player);
     }
 }
 
@@ -362,6 +513,23 @@ uint8 DualSpecMgr::GetPlayerSpecCount(Player* player) const
     return 1;
 }
 
+void DualSpecMgr::SetPlayerSpecCount(Player* player, uint8 count)
+{
+    if (player)
+    {
+        const uint32 playerId = player->GetObjectGuid().GetCounter();
+        auto playerStatusIt = playersStatus.find(playerId);
+        if (playerStatusIt != playersStatus.end())
+        {
+            playerStatusIt->second.specCount = count;
+        }
+        else
+        {
+            MANGOS_ASSERT(false);
+        }
+    }
+}
+
 void DualSpecMgr::SavePlayerSpec(Player* player)
 {
     if (player)
@@ -371,6 +539,77 @@ void DualSpecMgr::SavePlayerSpec(Player* player)
             GetPlayerActiveSpec(player),
             player->GetObjectGuid().GetCounter()
         );
+    }
+}
+
+void DualSpecMgr::LoadPlayerSpecNames(uint32 playerId)
+{
+    auto& playerSpecNames = playersSpecNames[playerId];
+    auto result = CharacterDatabase.PQuery("SELECT `spec`, `name` FROM `custom_dualspec_talent_name` WHERE `guid` = '%u';", playerId);
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            const uint8 spec = fields[0].GetUInt8();
+            const std::string name = fields[1].GetCppString();
+            playerSpecNames[spec] = name;
+        } 
+        while (result->NextRow());
+    }
+}
+
+const std::string& DualSpecMgr::GetPlayerSpecName(Player* player, uint8 spec) const
+{
+    if (player)
+    {
+        const uint32 playerId = player->GetObjectGuid().GetCounter();
+        auto playerSpecNamesIt = playersSpecNames.find(playerId);
+        if (playerSpecNamesIt != playersSpecNames.end())
+        {
+            return playerSpecNamesIt->second[spec];
+        }
+    }
+
+    MANGOS_ASSERT(false);
+    return "";
+}
+
+void DualSpecMgr::SetPlayerSpecName(Player* player, uint8 spec, const std::string& name)
+{
+    if (player)
+    {
+        const uint32 playerId = player->GetObjectGuid().GetCounter();
+        auto playerSpecNamesIt = playersSpecNames.find(playerId);
+        if (playerSpecNamesIt != playersSpecNames.end())
+        {
+            playerSpecNamesIt->second[spec] = name;
+        }
+        else
+        {
+            MANGOS_ASSERT(false);
+        }
+    }
+}
+
+void DualSpecMgr::SavePlayerSpecNames(Player* player)
+{
+    if (player)
+    {
+        const uint32 playerId = player->GetObjectGuid().GetCounter();
+        for (uint8 spec = 0; spec < MAX_TALENT_SPECS; spec++)
+        {
+            const std::string& specName = GetPlayerSpecName(player, spec);
+            if (!specName.empty())
+            {
+                CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent_name` WHERE `guid` = '%u';", playerId);
+                CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_talent_name` (`guid`, `spec`, `name`) VALUES ('%u', '%u', '%s')", 
+                    playerId, 
+                    spec,
+                    specName.c_str()
+                );
+            }
+        }
     }
 }
 
@@ -503,6 +742,49 @@ void DualSpecMgr::SendPlayerActionButtons(const Player* player, bool clear) cons
         else
         {
             player->SendInitialActionButtons();
+        }
+    }
+}
+
+void DualSpecMgr::AddDualSpecItem(Player* player)
+{
+    if (player)
+    {
+        WorldSession* session = player->GetSession();
+        ItemPrototype const* pProto = ObjectMgr::GetItemPrototype(DUALSPEC_ITEM_ENTRY);
+        if (!pProto)
+        {
+            session->SendAreaTriggerMessage("%s", DUAL_SPEC_ERR_ITEM_CREATE);
+            return;
+        }
+
+        // Adding items
+        uint32 count = 1;
+        uint32 noSpaceForCount = 0;
+
+        // Check space and find places
+        ItemPosCountVec dest;
+        uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, DUALSPEC_ITEM_ENTRY, count, &noSpaceForCount);
+        if (msg != EQUIP_ERR_OK)
+        {
+            count -= noSpaceForCount;
+        }
+
+        if (count == 0 || dest.empty())
+        {
+            session->SendAreaTriggerMessage("%s", DUAL_SPEC_ERR_ITEM_CREATE);
+            return;
+        }
+
+        Item* item = player->StoreNewItem(dest, DUALSPEC_ITEM_ENTRY, true, Item::GenerateItemRandomPropertyId(DUALSPEC_ITEM_ENTRY));
+        if (count > 0 && item)
+        {
+            player->SendNewItem(item, count, false, true);
+        }
+
+        if (noSpaceForCount > 0)
+        {
+            session->SendAreaTriggerMessage("%s", DUAL_SPEC_ERR_ITEM_CREATE);
         }
     }
 }

@@ -153,6 +153,8 @@ bool DualSpecMgr::OnPlayerGossipHello(Player* player, Creature* creature)
             return true;
         }
     }
+
+    return false;
 }
 
 bool DualSpecMgr::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, uint32 sender, uint32 action, const std::string& code)
@@ -745,7 +747,6 @@ const std::string& DualSpecMgr::GetPlayerSpecName(Player* player, uint8 spec) co
     }
 
     MANGOS_ASSERT(false);
-    return "";
 }
 
 void DualSpecMgr::SetPlayerSpecName(Player* player, uint8 spec, const std::string& name)

@@ -90,7 +90,7 @@ private:
     void SetPlayerSpecCount(Player* player, uint8 count);
     void SavePlayerSpec(uint32 playerId);
 
-    void LoadPlayerSpecNames(uint32 playerId);
+    void LoadPlayerSpecNames(Player* player);
     const std::string& GetPlayerSpecName(Player* player, uint8 spec) const;
     void SetPlayerSpecName(Player* player, uint8 spec, const std::string& name);
     void SavePlayerSpecNames(Player* player);

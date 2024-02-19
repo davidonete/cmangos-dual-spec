@@ -453,7 +453,7 @@ void DualSpecMgr::OnPlayerPostLoadFromDB(Player* player)
     if (sDualSpecConfig.enabled)
     {
         LoadPlayerTalents(player);
-        LoadPlayerSpecNames(playerId);
+        LoadPlayerSpecNames(player);
     }
 }
 
@@ -708,20 +708,24 @@ void DualSpecMgr::SavePlayerSpec(uint32 playerId)
     );
 }
 
-void DualSpecMgr::LoadPlayerSpecNames(uint32 playerId)
+void DualSpecMgr::LoadPlayerSpecNames(Player* player)
 {
-    auto& playerSpecNames = playersSpecNames[playerId];
-    auto result = CharacterDatabase.PQuery("SELECT `spec`, `name` FROM `custom_dualspec_talent_name` WHERE `guid` = '%u';", playerId);
-    if (result)
+    if (player)
     {
-        do
+        const uint32 playerId = player->GetObjectGuid().GetCounter();
+        auto& playerSpecNames = playersSpecNames[playerId];
+        auto result = CharacterDatabase.PQuery("SELECT `spec`, `name` FROM `custom_dualspec_talent_name` WHERE `guid` = '%u';", playerId);
+        if (result)
         {
-            Field* fields = result->Fetch();
-            const uint8 spec = fields[0].GetUInt8();
-            const std::string name = fields[1].GetCppString();
-            playerSpecNames[spec] = name;
-        } 
-        while (result->NextRow());
+            do
+            {
+                Field* fields = result->Fetch();
+                const uint8 spec = fields[0].GetUInt8();
+                const std::string name = fields[1].GetCppString();
+                playerSpecNames[spec] = name;
+            } 
+            while (result->NextRow());
+        }
     }
 }
 

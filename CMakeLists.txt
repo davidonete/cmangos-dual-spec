@@ -26,13 +26,17 @@ file(GLOB dualspec_source ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${CMAKE_CURRENT_
 set(LIBRARY_SRCS ${dualspec_source})
 
 # Define ENABLE_PLAYERBOTS if need
-if (BUILD_MANGOSBOTS OR BUILD_IKE3_BOTS)
+if (BUILD_PLAYERBOTS OR BUILD_IKE3_BOTS)
 	include_directories(
 		${CMAKE_SOURCE_DIR}/src/modules/Bots/playerbot
 		${CMAKE_SOURCE_DIR}/src/modules/Bots/ahbot
 	)
 
-	add_definitions(-DENABLE_MANGOSBOTS)
+	# delete this once bots are merged into cmangos
+	if (BUILD_PLAYERBOTS)
+		add_definitions(-DENABLE_MANGOSBOTS)
+	endif()
+
 	add_definitions(-DENABLE_PLAYERBOTS)
 endif()
 

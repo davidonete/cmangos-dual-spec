@@ -27,6 +27,12 @@ bool DualSpecMgr::OnPlayerItemUse(Player* player, Item* item)
     {
         if (player && item)
         {
+#ifdef ENABLE_PLAYERBOTS
+            // Don't use custom stats on random bots
+            if (!player->isRealPlayer())
+                return false;
+#endif
+
             // Check if using dual spec item
             if (item->GetEntry() != DUALSPEC_ITEM_ENTRY)
                 return false;

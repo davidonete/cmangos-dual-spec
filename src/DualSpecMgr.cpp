@@ -400,7 +400,6 @@ void DualSpecMgr::OnPlayerLearnTalent(Player* player, uint32 spellId)
     {
         if (player)
         {
-            const uint32 playerId = player->GetObjectGuid().GetCounter();
             SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spellId);
             if (!spellInfo)
             {
@@ -534,7 +533,7 @@ bool DualSpecMgr::OnPlayerLoadActionButtons(Player* player, ActionButtonList& ac
             else
             {
                 // Missing buttons for new character, create it from current config and try again
-                CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_action` (`guid`, `spec`, `button`, `action`, `type`) SELECT `guid`, 0 AS `spec`, `button`, `action`, `type` FROM `character_action` WHERE NOT EXISTS (SELECT 1 FROM `custom_dualspec_action` WHERE `custom_dualspec_action`.`guid` = `character_action`.`guid`);");
+                CharacterDatabase.DirectPExecute("INSERT INTO `custom_dualspec_action` (`guid`, `spec`, `button`, `action`, `type`) SELECT `guid`, 0 AS `spec`, `button`, `action`, `type` FROM `character_action` WHERE `character_action`.`guid` = '%u';", playerId);
                 return OnPlayerLoadActionButtons(player, actionButtons);
             }
         }
@@ -617,8 +616,6 @@ bool DualSpecMgr::OnPlayerSaveActionButtons(Player* player, ActionButtonList& ac
 
 void DualSpecMgr::LoadPlayerSpec(uint32 playerId)
 {
-    DualSpecPlayerStatus& playerStatus = playersStatus[playerId];
-
     auto result = CharacterDatabase.PQuery("SELECT `spec_count`, `active_spec` FROM `custom_dualspec_characters` WHERE `guid` = '%u';", playerId);
     if (result)
     {
@@ -637,7 +634,7 @@ void DualSpecMgr::LoadPlayerSpec(uint32 playerId)
     if (playerStatusIt == playersStatus.end())
     {
         playersStatus[playerId] = { 1, 0 };
-        SavePlayerSpec(playerId);
+        CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_characters` (`guid`) VALUES ('%u');", playerId);
     }
 }
 

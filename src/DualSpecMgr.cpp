@@ -140,7 +140,7 @@ bool DualSpecMgr::OnPlayerGossipHello(Player* player, Creature* creature)
                 player->GetPlayerMenu()->GetGossipMenu().AddMenuItem(GOSSIP_ICON_MONEY_BAG, costIs, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF, "", 0);
             }
             
-            if (specCount > 1)
+            if (specCount > 1 || player->GetItemCount(DUALSPEC_ITEM_ENTRY, true))
             {
                 const std::string changeSpec = player->GetSession()->GetMangosString(DUAL_SPEC_CHANGE_MY_SPEC);
                 player->GetPlayerMenu()->GetGossipMenu().AddMenuItem(GOSSIP_ICON_CHAT, changeSpec, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "", 0);

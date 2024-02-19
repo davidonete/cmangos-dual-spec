@@ -5,7 +5,7 @@ Dual Spec mod for cmangos vanilla and tbc cores which will allow the players to 
 NOTE: This guide assumes that you have basic knowledge on how to generate c++ projects, compile code and modify a database
 
 1. You should use a compatible core version for this to work: 
-- Classic (Dual Spec only): https://github.com/davidonete/mangos-classic/tree/dual-spec-mod
+- Classic (Dual Spec only): https://github.com/davidonete/mangos-classic/tree/dualspec-mod
 - Classic (All mods): https://github.com/celguar/mangos-classic/tree/ike3-bots
 - TBC (Dual Spec only): To be done...
 - TBC (All mods): https://github.com/celguar/mangos-tbc/tree/ike3-bots

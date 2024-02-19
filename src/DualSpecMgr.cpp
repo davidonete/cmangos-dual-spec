@@ -479,6 +479,7 @@ void DualSpecMgr::OnPlayerCharacterCreated(Player* player)
             // Create the default data
             const uint32 playerId = player->GetObjectGuid().GetCounter();
             playersTalents[playerId];
+            playersSpecNames[playerId];
             playersStatus[playerId] = { 1, 0 };
         }
     }

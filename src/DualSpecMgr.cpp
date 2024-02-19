@@ -761,14 +761,20 @@ void DualSpecMgr::SavePlayerSpecNames(Player* player)
 {
     if (player)
     {
+        bool deleteOld = true;
         const uint32 playerId = player->GetObjectGuid().GetCounter();
         for (uint8 spec = 0; spec < MAX_TALENT_SPECS; spec++)
         {
             const std::string& specName = GetPlayerSpecName(player, spec);
             if (!specName.empty())
             {
-                CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent_name` WHERE `guid` = '%u';", playerId);
-                CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_talent_name` (`guid`, `spec`, `name`) VALUES ('%u', '%u', '%s')", 
+                if (deleteOld)
+                {
+                    CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent_name` WHERE `guid` = '%u';", playerId);
+                    deleteOld = false;
+                }
+
+                CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_talent_name` (`guid`, `spec`, `name`) VALUES ('%u', '%u', '%s');", 
                     playerId, 
                     spec,
                     specName.c_str()

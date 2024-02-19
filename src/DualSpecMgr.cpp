@@ -470,6 +470,20 @@ void DualSpecMgr::OnPlayerLogOut(Player* player)
     }
 }
 
+void DualSpecMgr::OnPlayerCharacterCreated(Player* player)
+{
+    if (sDualSpecConfig.enabled)
+    {
+        if (player)
+        {
+            // Create the default data
+            const uint32 playerId = player->GetObjectGuid().GetCounter();
+            playersTalents[playerId];
+            playersStatus[playerId] = { 1, 0 };
+        }
+    }
+}
+
 void DualSpecMgr::OnPlayerSaveToDB(Player* player)
 {
     if (sDualSpecConfig.enabled)

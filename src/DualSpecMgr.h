@@ -77,6 +77,7 @@ public:
     void OnPlayerPreLoadFromDB(uint32 playerId);
     void OnPlayerPostLoadFromDB(Player* player);
     void OnPlayerLogOut(Player* player);
+    void OnPlayerCharacterCreated(Player* player);
     void OnPlayerCharacterDeleted(uint32 playerId);
     void OnPlayerSaveToDB(Player* player);
     bool OnPlayerLoadActionButtons(Player* player, ActionButtonList& actionButtons);

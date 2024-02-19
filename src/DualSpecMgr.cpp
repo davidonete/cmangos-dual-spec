@@ -501,7 +501,7 @@ bool DualSpecMgr::OnPlayerLoadActionButtons(Player* player, ActionButtonList& ac
             const uint32 playerId = player->GetObjectGuid().GetCounter();
             const uint8 activeSpec = GetPlayerActiveSpec(playerId);
             
-            auto result = CharacterDatabase.PQuery("SELECT button, action, type, spec FROM custom_dualspec_action WHERE guid = '%u' ORDER BY button;", playerId);
+            auto result = CharacterDatabase.PQuery("SELECT `button`, `action`, `type`, `spec` FROM `custom_dualspec_action` WHERE guid = '%u' ORDER BY `button`;", playerId);
             if (result)
             {
                 actionButtons.clear();
@@ -532,9 +532,8 @@ bool DualSpecMgr::OnPlayerLoadActionButtons(Player* player, ActionButtonList& ac
             }
             else
             {
-                // Missing buttons for new character, create it from current config and try again
-                CharacterDatabase.DirectPExecute("INSERT INTO `custom_dualspec_action` (`guid`, `spec`, `button`, `action`, `type`) SELECT `guid`, 0 AS `spec`, `button`, `action`, `type` FROM `character_action` WHERE `character_action`.`guid` = '%u';", playerId);
-                return OnPlayerLoadActionButtons(player, actionButtons);
+                // Missing buttons for new character, create it from current config
+                CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_action` (`guid`, `spec`, `button`, `action`, `type`) SELECT `guid`, 0 AS `spec`, `button`, `action`, `type` FROM `character_action` WHERE `character_action`.`guid` = '%u';", playerId);
             }
         }
     }
@@ -804,20 +803,26 @@ void DualSpecMgr::LoadPlayerTalents(Player* player)
             const uint8 spec = 0;
             DualSpecPlayerTalentMap& playerTalents = playersTalents[playerId][spec];
         
-            unsigned int numRows = sTalentStore.GetNumRows();
-            for (unsigned int i = 0; i < numRows; ++i)
+            for (uint32 talentId = 0; talentId < sTalentStore.GetNumRows(); talentId++)
             {
-                const TalentEntry* tmpTalent = sTalentStore.LookupEntry(i);
-                if (tmpTalent)
+                TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentId);
+                if (!talentInfo)
+                    continue;
+
+                TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
+                if (!talentTabInfo)
+                    continue;
+
+                if ((player->getClassMask() & talentTabInfo->ClassMask) == 0)
+                    continue;
+
+                for (uint8 rank = 0; rank < MAX_TALENT_RANK; ++rank)
                 {
-                    for (int j = 0; j < MAX_TALENT_RANK; ++j)
+                    if (talentInfo->RankID[rank] != 0)
                     {
-                        if (tmpTalent->RankID[j] != 0)
+                        if (player->HasSpell(talentInfo->RankID[rank]))
                         {
-                            if (player->HasSpell(tmpTalent->RankID[j]))
-                            {
-                                AddPlayerTalent(playerId, tmpTalent->RankID[j], spec, true);
-                            }
+                            AddPlayerTalent(playerId, talentInfo->RankID[rank], spec, true);
                         }
                     }
                 }

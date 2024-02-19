@@ -18,10 +18,6 @@ void DualSpecMgr::Init()
         CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent_name` WHERE NOT EXISTS (SELECT 1 FROM `characters` WHERE `characters`.`guid` = `custom_dualspec_talent_name`.`guid`);");
         CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_action` WHERE NOT EXISTS (SELECT 1 FROM `characters` WHERE `characters`.`guid` = `custom_dualspec_action`.`guid`);");
         CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_characters` WHERE NOT EXISTS (SELECT 1 FROM `characters` WHERE `characters`.`guid` = `custom_dualspec_characters`.`guid`);");
-
-        // Add current characters
-        CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_characters` (`guid`) SELECT `guid` FROM `characters` WHERE NOT EXISTS (SELECT 1 FROM `custom_dualspec_characters` WHERE `custom_dualspec_characters`.`guid` = `characters`.`guid`);");
-        CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_action` (`guid`, `spec`, `button`, `action`, `type`) SELECT `guid`, 0 AS `spec`, `button`, `action`, `type` FROM `character_action` WHERE NOT EXISTS (SELECT 1 FROM `custom_dualspec_action` WHERE `custom_dualspec_action`.`guid` = `character_action`.`guid`);");
     }
 }
 
@@ -35,6 +31,7 @@ bool DualSpecMgr::OnPlayerItemUse(Player* player, Item* item)
             if (item->GetEntry() != DUALSPEC_ITEM_ENTRY)
                 return false;
 
+            const uint32 playerId = player->GetObjectGuid().GetCounter();
             player->GetPlayerMenu()->ClearMenus();
 
             if (player->IsInCombat())
@@ -65,7 +62,7 @@ bool DualSpecMgr::OnPlayerItemUse(Player* player, Item* item)
                 return false;
             }
 
-            const uint8 specCount = GetPlayerSpecCount(player);
+            const uint8 specCount = GetPlayerSpecCount(playerId);
             if (specCount < MAX_TALENT_SPECS)
             {
                 const std::string msg = player->GetSession()->GetMangosString(DUAL_SPEC_ERR_UNLOCK);
@@ -80,7 +77,7 @@ bool DualSpecMgr::OnPlayerItemUse(Player* player, Item* item)
                 return false;
             }
 
-            const uint8 activeSpec = GetPlayerActiveSpec(player);
+            const uint8 activeSpec = GetPlayerActiveSpec(playerId);
             for (uint8 spec = 0; spec < specCount; ++spec)
             {
                 const std::string& specName = GetPlayerSpecName(player, spec);
@@ -126,13 +123,14 @@ bool DualSpecMgr::OnPlayerGossipHello(Player* player, Creature* creature)
             if (creature->GetEntry() != DUALSPEC_NPC_ENTRY)
                 return false;
 
+            const uint32 playerId = player->GetObjectGuid().GetCounter();
             player->GetPlayerMenu()->ClearMenus();
 
             const uint32 cost = sDualSpecConfig.cost;
             const std::string costStr = std::to_string(cost > 0U ? cost / 10000U : 0U);
             const std::string areYouSure = player->GetSession()->GetMangosString(DUAL_SPEC_ARE_YOU_SURE_BEGIN) + costStr + player->GetSession()->GetMangosString(DUAL_SPEC_ARE_YOU_SURE_END);
 
-            const uint8 specCount = GetPlayerSpecCount(player);
+            const uint8 specCount = GetPlayerSpecCount(playerId);
             if (specCount < MAX_TALENT_SPECS)
             {
                 // Display cost
@@ -178,7 +176,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, u
             GameObject* gameObject = player->GetGameObjectIfCanInteractWith(guid);
             if (gameObject)
             {
-                return OnPlayerGossipSelect(player, gameObject, sender, action, code);
+                //return OnPlayerGossipSelect(player, gameObject, sender, action, code);
             }
         }
         else if (guid.IsItem())
@@ -204,6 +202,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 se
             if (creature->GetEntry() != DUALSPEC_NPC_ENTRY)
                 return false;
 
+            const uint32 playerId = player->GetObjectGuid().GetCounter();
             player->GetPlayerMenu()->ClearMenus();
 
             if (!code.empty())
@@ -230,7 +229,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 se
                     if (player->GetMoney() >= sDualSpecConfig.cost)
                     {
                         player->ModifyMoney(-int32(sDualSpecConfig.cost));
-                        SetPlayerSpecCount(player, GetPlayerSpecCount(player) + 1);
+                        SetPlayerSpecCount(player, GetPlayerSpecCount(playerId) + 1);
                         OnPlayerGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "");
                         AddDualSpecItem(player);
                     }
@@ -245,7 +244,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 se
 
                 case GOSSIP_ACTION_INFO_DEF + 1:
                 {
-                    if (GetPlayerActiveSpec(player) == 0)
+                    if (GetPlayerActiveSpec(playerId) == 0)
                     {
                         player->GetPlayerMenu()->CloseGossip();
                         player->GetSession()->SendNotification(player->GetSession()->GetMangosString(DUAL_SPEC_ALREADY_ON_SPEC));
@@ -261,7 +260,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 se
 
                 case GOSSIP_ACTION_INFO_DEF + 2:
                 {
-                    if (GetPlayerActiveSpec(player) == 1)
+                    if (GetPlayerActiveSpec(playerId) == 1)
                     {
                         player->GetPlayerMenu()->CloseGossip();
                         player->GetSession()->SendNotification(player->GetSession()->GetMangosString(DUAL_SPEC_ALREADY_ON_SPEC));
@@ -277,8 +276,8 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 se
 
                 case GOSSIP_ACTION_INFO_DEF + 5:
                 {
-                    const uint8 activeSpec = GetPlayerActiveSpec(player);
-                    const uint8 specCount = GetPlayerSpecCount(player);
+                    const uint8 activeSpec = GetPlayerActiveSpec(playerId);
+                    const uint8 specCount = GetPlayerSpecCount(playerId);
                     for (uint8 spec = 0; spec < specCount; ++spec)
                     {
                         const std::string& specName = GetPlayerSpecName(player, spec);
@@ -313,19 +312,6 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 se
     return false;
 }
 
-bool DualSpecMgr::OnPlayerGossipSelect(Player* player, GameObject* gameObject, uint32 sender, uint32 action, const std::string& code)
-{
-    if (sDualSpecConfig.enabled)
-    {
-        if (player)
-        {
-
-        }
-    }
-
-    return false;
-}
-
 bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code)
 {
     if (sDualSpecConfig.enabled)
@@ -336,6 +322,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Item* item, uint32 sender
             if (item->GetEntry() != DUALSPEC_ITEM_ENTRY)
                 return false;
 
+            const uint32 playerId = player->GetObjectGuid().GetCounter();
             player->GetPlayerMenu()->ClearMenus();
 
             if (!code.empty())
@@ -360,7 +347,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Item* item, uint32 sender
                 {
                     case GOSSIP_ACTION_INFO_DEF + 1:
                     {
-                        if (GetPlayerActiveSpec(player) == 0)
+                        if (GetPlayerActiveSpec(playerId) == 0)
                         {
                             player->GetPlayerMenu()->CloseGossip();
                             const std::string msg = player->GetSession()->GetMangosString(DUAL_SPEC_ALREADY_ON_SPEC);
@@ -373,9 +360,10 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Item* item, uint32 sender
                         
                         break;
                     }
+
                     case GOSSIP_ACTION_INFO_DEF + 2:
                     {
-                        if (GetPlayerActiveSpec(player) == 1)
+                        if (GetPlayerActiveSpec(playerId) == 1)
                         {
                             player->GetPlayerMenu()->CloseGossip();
                             const std::string msg = player->GetSession()->GetMangosString(DUAL_SPEC_ALREADY_ON_SPEC);
@@ -412,6 +400,7 @@ void DualSpecMgr::OnPlayerLearnTalent(Player* player, uint32 spellId)
     {
         if (player)
         {
+            const uint32 playerId = player->GetObjectGuid().GetCounter();
             SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spellId);
             if (!spellInfo)
             {
@@ -426,7 +415,7 @@ void DualSpecMgr::OnPlayerLearnTalent(Player* player, uint32 spellId)
             }
 
             const uint32 playerId = player->GetObjectGuid().GetCounter();
-            AddPlayerTalent(playerId, spellId, GetPlayerActiveSpec(player), true);
+            AddPlayerTalent(playerId, spellId, GetPlayerActiveSpec(playerId), true);
         }
     }
 }
@@ -437,7 +426,8 @@ void DualSpecMgr::OnPlayerResetTalents(Player* player, uint32 cost)
     {
         if (player)
         {
-            DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(player);
+            const uint32 playerId = player->GetObjectGuid().GetCounter();
+            DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(playerId);
             for (auto& playerTalentsPair : playerTalents)
             {
                 const uint32 spellId = playerTalentsPair.first;
@@ -445,35 +435,24 @@ void DualSpecMgr::OnPlayerResetTalents(Player* player, uint32 cost)
                 playerTalent.state = PLAYERSPELL_REMOVED;
             }
 
-            SavePlayerTalents(player);
+            SavePlayerTalents(playerId);
         }
     }
 }
 
-void DualSpecMgr::OnPlayerCharacterCreated(Player* player)
+void DualSpecMgr::OnPlayerPreLoadFromDB(uint32 playerId)
 {
     if (sDualSpecConfig.enabled)
     {
-        if (player)
-        {
-            const uint32 playerId = player->GetObjectGuid().GetCounter();
-
-            // Create custom_dualspec_characters row
-            CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_characters` (`guid`) VALUES ('%u');", playerId);
-
-            // Create the default data
-            playersTalents[playerId];
-            playersStatus[playerId] = { 1, 0 };
-        }
-    }
-}
-
-void DualSpecMgr::OnPlayerLogIn(uint32 playerId)
-{
-    if (sDualSpecConfig.enabled)
-    {
-        LoadPlayerTalents(playerId);
         LoadPlayerSpec(playerId);
+    }
+}
+
+void DualSpecMgr::OnPlayerPostLoadFromDB(Player* player)
+{
+    if (sDualSpecConfig.enabled)
+    {
+        LoadPlayerTalents(player);
         LoadPlayerSpecNames(playerId);
     }
 }
@@ -496,8 +475,9 @@ void DualSpecMgr::OnPlayerSaveToDB(Player* player)
 {
     if (sDualSpecConfig.enabled)
     {
-        SavePlayerTalents(player);
-        SavePlayerSpec(player);
+        const uint32 playerId = player->GetObjectGuid().GetCounter();
+        SavePlayerTalents(playerId);
+        SavePlayerSpec(playerId);
         SavePlayerSpecNames(player);
     }
 }
@@ -519,8 +499,9 @@ bool DualSpecMgr::OnPlayerLoadActionButtons(Player* player, ActionButtonList& ac
     {
         if (player)
         {
-            const uint8 activeSpec = GetPlayerActiveSpec(player);
             const uint32 playerId = player->GetObjectGuid().GetCounter();
+            const uint8 activeSpec = GetPlayerActiveSpec(playerId);
+            
             auto result = CharacterDatabase.PQuery("SELECT button, action, type, spec FROM custom_dualspec_action WHERE guid = '%u' ORDER BY button;", playerId);
             if (result)
             {
@@ -550,6 +531,12 @@ bool DualSpecMgr::OnPlayerLoadActionButtons(Player* player, ActionButtonList& ac
 
                 return true;
             }
+            else
+            {
+                // Missing buttons for new character, create it from current config and try again
+                CharacterDatabase.PExecute("INSERT INTO `custom_dualspec_action` (`guid`, `spec`, `button`, `action`, `type`) SELECT `guid`, 0 AS `spec`, `button`, `action`, `type` FROM `character_action` WHERE NOT EXISTS (SELECT 1 FROM `custom_dualspec_action` WHERE `custom_dualspec_action`.`guid` = `character_action`.`guid`);");
+                return OnPlayerLoadActionButtons(player, actionButtons);
+            }
         }
     }
 
@@ -563,7 +550,7 @@ bool DualSpecMgr::OnPlayerSaveActionButtons(Player* player, ActionButtonList& ac
         if (player)
         {
             const uint32 playerId = player->GetObjectGuid().GetCounter();
-            const uint8 activeSpec = GetPlayerActiveSpec(player);
+            const uint8 activeSpec = GetPlayerActiveSpec(playerId);
 
             for (auto actionButtonIt = actionButtons.begin(); actionButtonIt != actionButtons.end();)
             {
@@ -630,6 +617,8 @@ bool DualSpecMgr::OnPlayerSaveActionButtons(Player* player, ActionButtonList& ac
 
 void DualSpecMgr::LoadPlayerSpec(uint32 playerId)
 {
+    DualSpecPlayerStatus& playerStatus = playersStatus[playerId];
+
     auto result = CharacterDatabase.PQuery("SELECT `spec_count`, `active_spec` FROM `custom_dualspec_characters` WHERE `guid` = '%u';", playerId);
     if (result)
     {
@@ -642,18 +631,22 @@ void DualSpecMgr::LoadPlayerSpec(uint32 playerId)
         } 
         while (result->NextRow());
     }
+
+    // Add row to db if not found
+    auto playerStatusIt = playersStatus.find(playerId);
+    if (playerStatusIt == playersStatus.end())
+    {
+        playersStatus[playerId] = { 1, 0 };
+        SavePlayerSpec(playerId);
+    }
 }
 
-uint8 DualSpecMgr::GetPlayerActiveSpec(Player* player) const
+uint8 DualSpecMgr::GetPlayerActiveSpec(uint32 playerId) const
 {
-    if (player)
+    auto playerStatusIt = playersStatus.find(playerId);
+    if (playerStatusIt != playersStatus.end())
     {
-        const uint32 playerId = player->GetObjectGuid().GetCounter();
-        auto playerStatusIt = playersStatus.find(playerId);
-        if (playerStatusIt != playersStatus.end())
-        {
-            return playerStatusIt->second.activeSpec;
-        }
+        return playerStatusIt->second.activeSpec;
     }
 
     MANGOS_ASSERT(false);
@@ -677,16 +670,12 @@ void DualSpecMgr::SetPlayerActiveSpec(Player* player, uint8 spec)
     }
 }
 
-uint8 DualSpecMgr::GetPlayerSpecCount(Player* player) const
+uint8 DualSpecMgr::GetPlayerSpecCount(uint32 playerId) const
 {
-    if (player)
+    auto playerStatusIt = playersStatus.find(playerId);
+    if (playerStatusIt != playersStatus.end())
     {
-        const uint32 playerId = player->GetObjectGuid().GetCounter();
-        auto playerStatusIt = playersStatus.find(playerId);
-        if (playerStatusIt != playersStatus.end())
-        {
-            return playerStatusIt->second.specCount;
-        }
+        return playerStatusIt->second.specCount;
     }
 
     MANGOS_ASSERT(false);
@@ -710,16 +699,13 @@ void DualSpecMgr::SetPlayerSpecCount(Player* player, uint8 count)
     }
 }
 
-void DualSpecMgr::SavePlayerSpec(Player* player)
+void DualSpecMgr::SavePlayerSpec(uint32 playerId)
 {
-    if (player)
-    {
-        CharacterDatabase.PExecute("UPDATE `custom_dualspec_characters` SET `spec_count` = '%u', `active_spec` = '%u' WHERE `guid` = '%u';",
-            GetPlayerSpecCount(player),
-            GetPlayerActiveSpec(player),
-            player->GetObjectGuid().GetCounter()
-        );
-    }
+    CharacterDatabase.PExecute("UPDATE `custom_dualspec_characters` SET `spec_count` = '%u', `active_spec` = '%u' WHERE `guid` = '%u';",
+        GetPlayerSpecCount(playerId),
+        GetPlayerActiveSpec(playerId),
+        playerId
+    );
 }
 
 void DualSpecMgr::LoadPlayerSpecNames(uint32 playerId)
@@ -792,22 +778,52 @@ void DualSpecMgr::SavePlayerSpecNames(Player* player)
     }
 }
 
-void DualSpecMgr::LoadPlayerTalents(uint32 playerId)
+void DualSpecMgr::LoadPlayerTalents(Player* player)
 {
-    // Create player talents container for later use
-    playersTalents[playerId];
-
-    auto result = CharacterDatabase.PQuery("SELECT `spell`, `spec` FROM `custom_dualspec_talent` WHERE `guid` = '%u';", playerId);
-    if (result)
+    if (player)
     {
-        do
+        const uint32 playerId = player->GetObjectGuid().GetCounter();
+        auto result = CharacterDatabase.PQuery("SELECT `spell`, `spec` FROM `custom_dualspec_talent` WHERE `guid` = '%u';", playerId);
+        if (result)
         {
-            Field* fields = result->Fetch();
-            const uint32 spellId = fields[0].GetUInt32();
-            const uint8 spec = fields[1].GetUInt8();
-            AddPlayerTalent(playerId, spellId, spec, false);
-        } 
-        while (result->NextRow());
+            do
+            {
+                Field* fields = result->Fetch();
+                const uint32 spellId = fields[0].GetUInt32();
+                const uint8 spec = fields[1].GetUInt8();
+                AddPlayerTalent(playerId, spellId, spec, false);
+            } 
+            while (result->NextRow());
+        }
+
+        // Add rows to db if not found
+        auto playerTalentsIt = playersTalents.find(playerId);
+        if (playerTalentsIt == playersTalents.end())
+        {
+            const uint8 spec = 0;
+            DualSpecPlayerTalentMap& playerTalents = playersTalents[playerId][spec];
+        
+            unsigned int numRows = sTalentStore.GetNumRows();
+            for (unsigned int i = 0; i < numRows; ++i)
+            {
+                const TalentEntry* tmpTalent = sTalentStore.LookupEntry(i);
+                if (tmpTalent)
+                {
+                    for (int j = 0; j < MAX_TALENT_RANK; ++j)
+                    {
+                        if (tmpTalent->RankID[j] != 0)
+                        {
+                            if (player->HasSpell(tmpTalent->RankID[j]))
+                            {
+                                AddPlayerTalent(playerId, tmpTalent->RankID[j], spec, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            SavePlayerTalents(playerId);
+        }
     }
 }
 
@@ -815,7 +831,8 @@ bool DualSpecMgr::PlayerHasTalent(Player* player, uint32 spellId, uint8 spec)
 {
     if (player)
     {
-        DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(player, spec);
+        const uint32 playerId = player->GetObjectGuid().GetCounter();
+        DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(playerId, spec);
         auto it = playerTalents.find(spellId);
         if (it != playerTalents.end())
         {
@@ -826,17 +843,13 @@ bool DualSpecMgr::PlayerHasTalent(Player* player, uint32 spellId, uint8 spec)
     return false;
 }
 
-DualSpecPlayerTalentMap& DualSpecMgr::GetPlayerTalents(Player* player, int8 spec)
+DualSpecPlayerTalentMap& DualSpecMgr::GetPlayerTalents(uint32 playerId, int8 spec)
 {
-    if (player)
+    auto playerTalentSpecIt = playersTalents.find(playerId);
+    if (playerTalentSpecIt != playersTalents.end())
     {
-        const uint32 playerId = player->GetObjectGuid().GetCounter();
-        auto playerTalentSpecIt = playersTalents.find(playerId);
-        if (playerTalentSpecIt != playersTalents.end())
-        {
-            spec = spec >= 0 ? spec : GetPlayerActiveSpec(player);
-            return playerTalentSpecIt->second[spec];
-        }
+        spec = spec >= 0 ? spec : GetPlayerActiveSpec(playerId);
+        return playerTalentSpecIt->second[spec];
     }
 
     MANGOS_ASSERT(false);
@@ -878,46 +891,42 @@ void DualSpecMgr::AddPlayerTalent(uint32 playerId, uint32 spellId, uint8 spec, b
     }
 }
 
-void DualSpecMgr::SavePlayerTalents(Player* player)
+void DualSpecMgr::SavePlayerTalents(uint32 playerId)
 {
-    if (player)
+    for (uint8 i = 0; i < MAX_TALENT_SPECS; ++i)
     {
-        const uint32 playerId = player->GetObjectGuid().GetCounter();
-        for (uint8 i = 0; i < MAX_TALENT_SPECS; ++i)
+        DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(playerId, i);
+        for (auto playerTalentsIt = playerTalents.begin(); playerTalentsIt != playerTalents.end();)
         {
-            DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(player, i);
-            for (auto playerTalentsIt = playerTalents.begin(); playerTalentsIt != playerTalents.end();)
+            const uint32 spellId = playerTalentsIt->first;
+            DualSpecPlayerTalent& playerTalent = playerTalentsIt->second;
+
+            if (playerTalent.state == PLAYERSPELL_REMOVED || playerTalent.state == PLAYERSPELL_CHANGED)
             {
-                const uint32 spellId = playerTalentsIt->first;
-                DualSpecPlayerTalent& playerTalent = playerTalentsIt->second;
+                CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u' and `spell` = '%u' and `spec` = '%u';",
+                    playerId,
+                    spellId,
+                    playerTalent.spec
+                );
+            }
 
-                if (playerTalent.state == PLAYERSPELL_REMOVED || playerTalent.state == PLAYERSPELL_CHANGED)
-                {
-                    CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u' and `spell` = '%u' and `spec` = '%u';",
-                        playerId,
-                        spellId,
-                        playerTalent.spec
-                    );
-                }
+            if (playerTalent.state == PLAYERSPELL_NEW || playerTalent.state == PLAYERSPELL_CHANGED)
+            {
+                CharacterDatabase.PExecute("INSERT INTO custom_dualspec_talent (`guid`, `spell`, `spec`) VALUES ('%u', '%u', '%u');",
+                    playerId,
+                    spellId,
+                    playerTalent.spec
+                );
+            }
 
-                if (playerTalent.state == PLAYERSPELL_NEW || playerTalent.state == PLAYERSPELL_CHANGED)
-                {
-                    CharacterDatabase.PExecute("INSERT INTO custom_dualspec_talent (`guid`, `spell`, `spec`) VALUES ('%u', '%u', '%u');",
-                        playerId,
-                        spellId,
-                        playerTalent.spec
-                    );
-                }
-
-                if (playerTalent.state == PLAYERSPELL_REMOVED)
-                {
-                    playerTalents.erase(playerTalentsIt++);
-                }
-                else
-                {
-                    playerTalent.state = PLAYERSPELL_UNCHANGED;
-                    ++playerTalentsIt;
-                }
+            if (playerTalent.state == PLAYERSPELL_REMOVED)
+            {
+                playerTalents.erase(playerTalentsIt++);
+            }
+            else
+            {
+                playerTalent.state = PLAYERSPELL_UNCHANGED;
+                ++playerTalentsIt;
             }
         }
     }
@@ -944,10 +953,11 @@ void DualSpecMgr::ActivatePlayerSpec(Player* player, uint8 spec)
 {
     if (player)
     {
-        if (GetPlayerActiveSpec(player) == spec)
+        const uint32 playerId = player->GetObjectGuid().GetCounter();
+        if (GetPlayerActiveSpec(playerId) == spec)
             return;
 
-        if (spec > GetPlayerSpecCount(player))
+        if (spec > GetPlayerSpecCount(playerId))
             return;
 
         if (player->IsNonMeleeSpellCasted(false))

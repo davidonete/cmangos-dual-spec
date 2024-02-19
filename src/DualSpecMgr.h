@@ -70,14 +70,13 @@ public:
     bool OnPlayerGossipHello(Player* player, Creature* creature);
     bool OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, uint32 sender, uint32 action, const std::string& code);
     bool OnPlayerGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action, const std::string& code);
-    bool OnPlayerGossipSelect(Player* player, GameObject* gameObject, uint32 sender, uint32 action, const std::string& code);
     bool OnPlayerGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code);
     void OnPlayerLearnTalent(Player* player, uint32 spellId);
     void OnPlayerResetTalents(Player* player, uint32 cost);
 
-    void OnPlayerLogIn(uint32 playerId);
+    void OnPlayerPreLoadFromDB(uint32 playerId);
+    void OnPlayerPostLoadFromDB(Player* player);
     void OnPlayerLogOut(Player* player);
-    void OnPlayerCharacterCreated(Player* player);
     void OnPlayerCharacterDeleted(uint32 playerId);
     void OnPlayerSaveToDB(Player* player);
     bool OnPlayerLoadActionButtons(Player* player, ActionButtonList& actionButtons);
@@ -85,22 +84,22 @@ public:
 
 private:
     void LoadPlayerSpec(uint32 playerId);
-    uint8 GetPlayerActiveSpec(Player* player) const;
+    uint8 GetPlayerActiveSpec(uint32 playerId) const;
     void SetPlayerActiveSpec(Player* player, uint8 spec);
-    uint8 GetPlayerSpecCount(Player* player) const;
+    uint8 GetPlayerSpecCount(uint32 playerId) const;
     void SetPlayerSpecCount(Player* player, uint8 count);
-    void SavePlayerSpec(Player* player);
+    void SavePlayerSpec(uint32 playerId);
 
     void LoadPlayerSpecNames(uint32 playerId);
     const std::string& GetPlayerSpecName(Player* player, uint8 spec) const;
     void SetPlayerSpecName(Player* player, uint8 spec, const std::string& name);
     void SavePlayerSpecNames(Player* player);
 
-    void LoadPlayerTalents(uint32 playerId);
+    void LoadPlayerTalents(Player* player);
     bool PlayerHasTalent(Player* player, uint32 spellId, uint8 spec);
-    DualSpecPlayerTalentMap& GetPlayerTalents(Player* player, int8 spec = -1);
+    DualSpecPlayerTalentMap& GetPlayerTalents(uint32 playerId, int8 spec = -1);
     void AddPlayerTalent(uint32 playerId, uint32 spellId, uint8 spec, bool learned);
-    void SavePlayerTalents(Player* player);
+    void SavePlayerTalents(uint32 playerId);
 
     void SendPlayerActionButtons(const Player* player, bool clear) const;
 

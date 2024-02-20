@@ -431,6 +431,17 @@ void DualSpecModule::OnSaveToDB(Player* player)
     }
 }
 
+void DualSpecModule::OnDeleteFromDB(uint32 playerId)
+{
+    if (GetConfig()->enabled)
+    {
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u';", playerId);
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent_name` WHERE `guid` = '%u';", playerId);
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_action` WHERE `guid` = '%u';", playerId);
+        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_characters` WHERE `guid` = '%u';", playerId);
+    }
+}
+
 void DualSpecModule::OnLogOut(Player* player)
 {
     if (GetConfig()->enabled)
@@ -457,17 +468,6 @@ void DualSpecModule::OnCharacterCreated(Player* player)
             playersSpecNames[playerId];
             playersStatus[playerId] = { 1, 0 };
         }
-    }
-}
-
-void DualSpecModule::OnCharacterDeleted(uint32 playerId)
-{
-    if (GetConfig()->enabled)
-    {
-        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u';", playerId);
-        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent_name` WHERE `guid` = '%u';", playerId);
-        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_action` WHERE `guid` = '%u';", playerId);
-        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_characters` WHERE `guid` = '%u';", playerId);
     }
 }
 

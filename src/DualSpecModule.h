@@ -40,9 +40,9 @@ public:
     void OnPreLoadFromDB(uint32 playerId) override;
     void OnLoadFromDB(Player* player) override;
     void OnSaveToDB(Player* player) override;
+    void OnDeleteFromDB(uint32 playerId) override;
     void OnLogOut(Player* player) override;
     void OnCharacterCreated(Player* player) override;
-    void OnCharacterDeleted(uint32 playerId) override;
     bool OnLoadActionButtons(Player* player, ActionButtonList& actionButtons) override;
     bool OnSaveActionButtons(Player* player, ActionButtonList& actionButtons) override;
 

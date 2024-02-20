@@ -2,13 +2,12 @@
 #define MANGOS_DUALSPEC_MGR_H
 
 #include "DualSpecConfig.h"
+#include "Module.h"
 
 #include "Platform/Define.h"
 
 #include <unordered_map>
 #include <map>
-
-#include "ModuleMgr.h"
 
 class Creature;
 class GameObject;
@@ -115,5 +114,5 @@ private:
     std::map<uint32, std::string[MAX_TALENT_SPECS]> playersSpecNames;
 };
 
-static DualSpecModule dualSpecModule;
+inline DualSpecModule* dualSpecModule = new DualSpecModule();
 #endif

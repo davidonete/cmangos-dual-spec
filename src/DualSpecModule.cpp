@@ -7,10 +7,9 @@
 #include "Globals/ObjectMgr.h"
 #include "Spells/SpellMgr.h"
 
+/*
 void DualSpecModule::Init()
 {
-    sDualSpecConfig.Initialize();
-
     if (sDualSpecConfig.enabled)
     {
         // Cleanup non existent characters
@@ -1183,3 +1182,4 @@ void DualSpecModule::AddDualSpecItem(Player* player)
         }
     }
 }
+*/

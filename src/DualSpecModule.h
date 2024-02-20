@@ -1,8 +1,8 @@
 #ifndef MANGOS_DUALSPEC_MGR_H
 #define MANGOS_DUALSPEC_MGR_H
 
-#include "DualSpecConfig.h"
 #include "Module.h"
+#include "DualSpecConfig.h"
 
 #include "Platform/Define.h"
 
@@ -64,6 +64,7 @@ class DualSpecModule : public Module
 public:
     DualSpecModule() : Module() {}
 
+    /*
     void Init();
 
     // Player hooks
@@ -83,10 +84,13 @@ public:
     void OnPlayerSaveToDB(Player* player);
     bool OnPlayerLoadActionButtons(Player* player, ActionButtonList& actionButtons);
     bool OnPlayerSaveActionButtons(Player* player, ActionButtonList& actionButtons);
+    */
 
 private:
-    ModuleConfig* CreateConfig() override { return new DualSpecModuleConfig(); }
+    //ModuleConfig* CreateConfig() override { return new DualSpecModuleConfig(); }
+    //DualSpecModuleConfig* GetConfig() override { return (DualSpecModuleConfig*)GetConfigInternal(); }
 
+    /*
     void LoadPlayerSpec(uint32 playerId);
     uint8 GetPlayerActiveSpec(uint32 playerId) const;
     void SetPlayerActiveSpec(Player* player, uint8 spec);
@@ -109,6 +113,7 @@ private:
 
     void ActivatePlayerSpec(Player* player, uint8 spec);
     void AddDualSpecItem(Player* player);
+    */
 
 private:
     std::map<uint32, DualSpecPlayerTalentMap[MAX_TALENT_SPECS]> playersTalents;
@@ -116,5 +121,5 @@ private:
     std::map<uint32, std::string[MAX_TALENT_SPECS]> playersSpecNames;
 };
 
-inline DualSpecModule* dualSpecModule = new DualSpecModule();
+inline DualSpecModule dualSpecModule;
 #endif

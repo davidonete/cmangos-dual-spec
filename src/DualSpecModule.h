@@ -23,7 +23,7 @@ typedef std::unordered_map<uint32, DualSpecPlayerTalent> DualSpecPlayerTalentMap
 class DualSpecModule : public Module
 {
 public:
-    DualSpecModule() : Module() {}
+    DualSpecModule() : Module("DualSpec") {}
     DualSpecModuleConfig* CreateConfig() override { return new DualSpecModuleConfig(); }
     DualSpecModuleConfig* GetConfig() override { return (DualSpecModuleConfig*)GetConfigInternal(); }
 

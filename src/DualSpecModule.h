@@ -65,8 +65,6 @@ public:
     DualSpecModule() : Module() {}
 
     /*
-    void Init();
-
     // Player hooks
     bool OnPlayerItemUse(Player* player, Item* item);
     bool OnPlayerGossipHello(Player* player, Creature* creature);
@@ -87,8 +85,11 @@ public:
     */
 
 private:
-    //ModuleConfig* CreateConfig() override { return new DualSpecModuleConfig(); }
-    //DualSpecModuleConfig* GetConfig() override { return (DualSpecModuleConfig*)GetConfigInternal(); }
+    DualSpecModuleConfig* CreateConfig() override { return new DualSpecModuleConfig(); }
+    DualSpecModuleConfig* GetConfig() override { return (DualSpecModuleConfig*)GetConfigInternal(); }
+
+    void OnInitialize() override;
+
 
     /*
     void LoadPlayerSpec(uint32 playerId);
@@ -121,5 +122,5 @@ private:
     std::map<uint32, std::string[MAX_TALENT_SPECS]> playersSpecNames;
 };
 
-inline DualSpecModule dualSpecModule;
+inline DualSpecModule* dualSpecModule = new DualSpecModule();
 #endif

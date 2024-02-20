@@ -7,10 +7,9 @@
 #include "Globals/ObjectMgr.h"
 #include "Spells/SpellMgr.h"
 
-/*
-void DualSpecModule::Init()
+void DualSpecModule::OnInitialize()
 {
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
     {
         // Cleanup non existent characters
         CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE NOT EXISTS (SELECT 1 FROM `characters` WHERE `characters`.`guid` = `custom_dualspec_talent`.`guid`);");
@@ -20,6 +19,7 @@ void DualSpecModule::Init()
     }
 }
 
+/*
 bool DualSpecModule::OnPlayerItemUse(Player* player, Item* item)
 {
     if (sDualSpecConfig.enabled)

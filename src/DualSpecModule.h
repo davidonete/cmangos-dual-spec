@@ -72,8 +72,8 @@ private:
 
 private:
     std::map<uint32, DualSpecPlayerTalentMap[MAX_TALENT_SPECS]> playersTalents;
-    std::map<uint32, DualSpecPlayerStatus> playersStatus;
     std::map<uint32, std::string[MAX_TALENT_SPECS]> playersSpecNames;
+    std::map<uint32, DualSpecPlayerStatus> playersStatus;
 };
 
 static DualSpecModule dualSpecModule;

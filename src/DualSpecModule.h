@@ -4,45 +4,7 @@
 #include "Module.h"
 #include "DualSpecConfig.h"
 
-#include "Platform/Define.h"
-
 #include <unordered_map>
-#include <map>
-
-class Creature;
-class GameObject;
-class Item;
-class ObjectGuid;
-class Player;
-class Unit;
-
-struct ActionButton;
-
-enum DualSpecMessages
-{
-    DUAL_SPEC_DESCRIPTION = 12000,
-    DUAL_SPEC_COST_IS,
-    DUAL_SPEC_CHANGE_MY_SPEC,
-    DUAL_SPEC_NO_GOLD_UNLOCK,
-    DUAL_SPEC_ARE_YOU_SURE_BEGIN,
-    DUAL_SPEC_ARE_YOU_SURE_END,
-    DUAL_SPEC_ALREADY_ON_SPEC,
-    DUAL_SPEC_ACTIVATE,
-    DUAL_SPEC_RENAME,
-    DUAL_SPEC_UNNAMED,
-    DUAL_SPEC_ACTIVE,
-    DUAL_SPEC_ERR_COMBAT,
-    DUAL_SPEC_ERR_INSTANCE,
-    DUAL_SPEC_ERR_MOUNT,
-    DUAL_SPEC_ERR_DEAD,
-    DUAL_SPEC_ERR_UNLOCK,
-    DUAL_SPEC_ERR_LEVEL,
-    DUAL_SPEC_ACTIVATE_COLOR,
-    DUAL_SPEC_RENAME_COLOR,
-    DUAL_SPEC_ARE_YOU_SURE_SWITCH,
-    DUAL_SPEC_PURCHASE,
-    DUAL_SPEC_ERR_ITEM_CREATE,
-};
 
 struct DualSpecPlayerTalent
 {
@@ -57,7 +19,6 @@ struct DualSpecPlayerStatus
 };
 
 typedef std::unordered_map<uint32, DualSpecPlayerTalent> DualSpecPlayerTalentMap;
-typedef std::map<uint8, ActionButton> ActionButtonList;
 
 class DualSpecModule : public Module
 {

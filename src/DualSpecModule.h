@@ -60,10 +60,10 @@ struct DualSpecPlayerStatus
 typedef std::unordered_map<uint32, DualSpecPlayerTalent> DualSpecPlayerTalentMap;
 typedef std::map<uint8, ActionButton> ActionButtonList;
 
-class DualSpecMgr : public Module
+class DualSpecModule : public Module
 {
 public:
-    DualSpecMgr() : Module() {}
+    DualSpecModule() : Module() {}
 
     void Init();
 
@@ -115,5 +115,5 @@ private:
     std::map<uint32, std::string[MAX_TALENT_SPECS]> playersSpecNames;
 };
 
-extern DualSpecMgr dualSpecMgr;
+static DualSpecModule dualSpecModule;
 #endif

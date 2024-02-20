@@ -1,4 +1,4 @@
-#include "DualSpecMgr.h"
+#include "DualSpecModule.h"
 
 #include "AI/ScriptDevAI/include/sc_gossip.h"
 #include "Entities/GossipDef.h"
@@ -7,9 +7,7 @@
 #include "Globals/ObjectMgr.h"
 #include "Spells/SpellMgr.h"
 
-DualSpecMgr dualSpecMgr;
-
-void DualSpecMgr::Init()
+void DualSpecModule::Init()
 {
     sDualSpecConfig.Initialize();
 
@@ -23,7 +21,7 @@ void DualSpecMgr::Init()
     }
 }
 
-bool DualSpecMgr::OnPlayerItemUse(Player* player, Item* item)
+bool DualSpecModule::OnPlayerItemUse(Player* player, Item* item)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -115,7 +113,7 @@ bool DualSpecMgr::OnPlayerItemUse(Player* player, Item* item)
     return false;
 }
 
-bool DualSpecMgr::OnPlayerGossipHello(Player* player, Creature* creature)
+bool DualSpecModule::OnPlayerGossipHello(Player* player, Creature* creature)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -160,7 +158,7 @@ bool DualSpecMgr::OnPlayerGossipHello(Player* player, Creature* creature)
     return false;
 }
 
-bool DualSpecMgr::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, uint32 sender, uint32 action, const std::string& code)
+bool DualSpecModule::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, uint32 sender, uint32 action, const std::string& code)
 {
     // TO DO: Move this to generic module system once done
     if (player)
@@ -194,7 +192,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, u
     return false;
 }
 
-bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action, const std::string& code)
+bool DualSpecModule::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action, const std::string& code)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -314,7 +312,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 se
     return false;
 }
 
-bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code)
+bool DualSpecModule::OnPlayerGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -396,7 +394,7 @@ bool DualSpecMgr::OnPlayerGossipSelect(Player* player, Item* item, uint32 sender
     return false;
 }
 
-void DualSpecMgr::OnPlayerLearnTalent(Player* player, uint32 spellId)
+void DualSpecModule::OnPlayerLearnTalent(Player* player, uint32 spellId)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -421,7 +419,7 @@ void DualSpecMgr::OnPlayerLearnTalent(Player* player, uint32 spellId)
     }
 }
 
-void DualSpecMgr::OnPlayerResetTalents(Player* player, uint32 cost)
+void DualSpecModule::OnPlayerResetTalents(Player* player, uint32 cost)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -441,7 +439,7 @@ void DualSpecMgr::OnPlayerResetTalents(Player* player, uint32 cost)
     }
 }
 
-void DualSpecMgr::OnPlayerPreLoadFromDB(uint32 playerId)
+void DualSpecModule::OnPlayerPreLoadFromDB(uint32 playerId)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -449,7 +447,7 @@ void DualSpecMgr::OnPlayerPreLoadFromDB(uint32 playerId)
     }
 }
 
-void DualSpecMgr::OnPlayerPostLoadFromDB(Player* player)
+void DualSpecModule::OnPlayerPostLoadFromDB(Player* player)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -458,7 +456,7 @@ void DualSpecMgr::OnPlayerPostLoadFromDB(Player* player)
     }
 }
 
-void DualSpecMgr::OnPlayerLogOut(Player* player)
+void DualSpecModule::OnPlayerLogOut(Player* player)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -472,7 +470,7 @@ void DualSpecMgr::OnPlayerLogOut(Player* player)
     }
 }
 
-void DualSpecMgr::OnPlayerCharacterCreated(Player* player)
+void DualSpecModule::OnPlayerCharacterCreated(Player* player)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -487,7 +485,7 @@ void DualSpecMgr::OnPlayerCharacterCreated(Player* player)
     }
 }
 
-void DualSpecMgr::OnPlayerSaveToDB(Player* player)
+void DualSpecModule::OnPlayerSaveToDB(Player* player)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -498,7 +496,7 @@ void DualSpecMgr::OnPlayerSaveToDB(Player* player)
     }
 }
 
-void DualSpecMgr::OnPlayerCharacterDeleted(uint32 playerId)
+void DualSpecModule::OnPlayerCharacterDeleted(uint32 playerId)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -509,7 +507,7 @@ void DualSpecMgr::OnPlayerCharacterDeleted(uint32 playerId)
     }
 }
 
-bool DualSpecMgr::OnPlayerLoadActionButtons(Player* player, ActionButtonList& actionButtons)
+bool DualSpecModule::OnPlayerLoadActionButtons(Player* player, ActionButtonList& actionButtons)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -558,7 +556,7 @@ bool DualSpecMgr::OnPlayerLoadActionButtons(Player* player, ActionButtonList& ac
     return false;
 }
 
-bool DualSpecMgr::OnPlayerSaveActionButtons(Player* player, ActionButtonList& actionButtons)
+bool DualSpecModule::OnPlayerSaveActionButtons(Player* player, ActionButtonList& actionButtons)
 {
     if (sDualSpecConfig.enabled)
     {
@@ -630,7 +628,7 @@ bool DualSpecMgr::OnPlayerSaveActionButtons(Player* player, ActionButtonList& ac
     return false;
 }
 
-void DualSpecMgr::LoadPlayerSpec(uint32 playerId)
+void DualSpecModule::LoadPlayerSpec(uint32 playerId)
 {
     auto result = CharacterDatabase.PQuery("SELECT `spec_count`, `active_spec` FROM `custom_dualspec_characters` WHERE `guid` = '%u';", playerId);
     if (result)
@@ -654,7 +652,7 @@ void DualSpecMgr::LoadPlayerSpec(uint32 playerId)
     }
 }
 
-uint8 DualSpecMgr::GetPlayerActiveSpec(uint32 playerId) const
+uint8 DualSpecModule::GetPlayerActiveSpec(uint32 playerId) const
 {
     auto playerStatusIt = playersStatus.find(playerId);
     if (playerStatusIt != playersStatus.end())
@@ -666,7 +664,7 @@ uint8 DualSpecMgr::GetPlayerActiveSpec(uint32 playerId) const
     return 0;
 }
 
-void DualSpecMgr::SetPlayerActiveSpec(Player* player, uint8 spec)
+void DualSpecModule::SetPlayerActiveSpec(Player* player, uint8 spec)
 {
     if (player)
     {
@@ -683,7 +681,7 @@ void DualSpecMgr::SetPlayerActiveSpec(Player* player, uint8 spec)
     }
 }
 
-uint8 DualSpecMgr::GetPlayerSpecCount(uint32 playerId) const
+uint8 DualSpecModule::GetPlayerSpecCount(uint32 playerId) const
 {
     auto playerStatusIt = playersStatus.find(playerId);
     if (playerStatusIt != playersStatus.end())
@@ -695,7 +693,7 @@ uint8 DualSpecMgr::GetPlayerSpecCount(uint32 playerId) const
     return 1;
 }
 
-void DualSpecMgr::SetPlayerSpecCount(Player* player, uint8 count)
+void DualSpecModule::SetPlayerSpecCount(Player* player, uint8 count)
 {
     if (player)
     {
@@ -712,7 +710,7 @@ void DualSpecMgr::SetPlayerSpecCount(Player* player, uint8 count)
     }
 }
 
-void DualSpecMgr::SavePlayerSpec(uint32 playerId)
+void DualSpecModule::SavePlayerSpec(uint32 playerId)
 {
     CharacterDatabase.PExecute("UPDATE `custom_dualspec_characters` SET `spec_count` = '%u', `active_spec` = '%u' WHERE `guid` = '%u';",
         GetPlayerSpecCount(playerId),
@@ -721,7 +719,7 @@ void DualSpecMgr::SavePlayerSpec(uint32 playerId)
     );
 }
 
-void DualSpecMgr::LoadPlayerSpecNames(Player* player)
+void DualSpecModule::LoadPlayerSpecNames(Player* player)
 {
     if (player)
     {
@@ -742,7 +740,7 @@ void DualSpecMgr::LoadPlayerSpecNames(Player* player)
     }
 }
 
-const std::string& DualSpecMgr::GetPlayerSpecName(Player* player, uint8 spec) const
+const std::string& DualSpecModule::GetPlayerSpecName(Player* player, uint8 spec) const
 {
     if (player)
     {
@@ -757,7 +755,7 @@ const std::string& DualSpecMgr::GetPlayerSpecName(Player* player, uint8 spec) co
     MANGOS_ASSERT(false);
 }
 
-void DualSpecMgr::SetPlayerSpecName(Player* player, uint8 spec, const std::string& name)
+void DualSpecModule::SetPlayerSpecName(Player* player, uint8 spec, const std::string& name)
 {
     if (player)
     {
@@ -774,7 +772,7 @@ void DualSpecMgr::SetPlayerSpecName(Player* player, uint8 spec, const std::strin
     }
 }
 
-void DualSpecMgr::SavePlayerSpecNames(Player* player)
+void DualSpecModule::SavePlayerSpecNames(Player* player)
 {
     if (player)
     {
@@ -801,7 +799,7 @@ void DualSpecMgr::SavePlayerSpecNames(Player* player)
     }
 }
 
-void DualSpecMgr::LoadPlayerTalents(Player* player)
+void DualSpecModule::LoadPlayerTalents(Player* player)
 {
     if (player)
     {
@@ -856,7 +854,7 @@ void DualSpecMgr::LoadPlayerTalents(Player* player)
     }
 }
 
-bool DualSpecMgr::PlayerHasTalent(Player* player, uint32 spellId, uint8 spec)
+bool DualSpecModule::PlayerHasTalent(Player* player, uint32 spellId, uint8 spec)
 {
     if (player)
     {
@@ -872,7 +870,7 @@ bool DualSpecMgr::PlayerHasTalent(Player* player, uint32 spellId, uint8 spec)
     return false;
 }
 
-DualSpecPlayerTalentMap& DualSpecMgr::GetPlayerTalents(uint32 playerId, int8 spec)
+DualSpecPlayerTalentMap& DualSpecModule::GetPlayerTalents(uint32 playerId, int8 spec)
 {
     auto playerTalentSpecIt = playersTalents.find(playerId);
     if (playerTalentSpecIt != playersTalents.end())
@@ -885,7 +883,7 @@ DualSpecPlayerTalentMap& DualSpecMgr::GetPlayerTalents(uint32 playerId, int8 spe
     return playersTalents[0][0];
 }
 
-void DualSpecMgr::AddPlayerTalent(uint32 playerId, uint32 spellId, uint8 spec, bool learned)
+void DualSpecModule::AddPlayerTalent(uint32 playerId, uint32 spellId, uint8 spec, bool learned)
 {
     auto& playerTalents = playersTalents[playerId][spec];
 
@@ -920,7 +918,7 @@ void DualSpecMgr::AddPlayerTalent(uint32 playerId, uint32 spellId, uint8 spec, b
     }
 }
 
-void DualSpecMgr::SavePlayerTalents(uint32 playerId)
+void DualSpecModule::SavePlayerTalents(uint32 playerId)
 {
     for (uint8 i = 0; i < MAX_TALENT_SPECS; ++i)
     {
@@ -961,7 +959,7 @@ void DualSpecMgr::SavePlayerTalents(uint32 playerId)
     }
 }
 
-void DualSpecMgr::SendPlayerActionButtons(const Player* player, bool clear) const
+void DualSpecModule::SendPlayerActionButtons(const Player* player, bool clear) const
 {
     if (player)
     {
@@ -978,7 +976,7 @@ void DualSpecMgr::SendPlayerActionButtons(const Player* player, bool clear) cons
     }
 }
 
-void DualSpecMgr::ActivatePlayerSpec(Player* player, uint8 spec)
+void DualSpecModule::ActivatePlayerSpec(Player* player, uint8 spec)
 {
     if (player)
     {
@@ -1143,7 +1141,7 @@ void DualSpecMgr::ActivatePlayerSpec(Player* player, uint8 spec)
     }
 }
 
-void DualSpecMgr::AddDualSpecItem(Player* player)
+void DualSpecModule::AddDualSpecItem(Player* player)
 {
     if (player)
     {

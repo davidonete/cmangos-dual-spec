@@ -1,6 +1,5 @@
 #pragma once
-
-#include "Config/Config.h"
+#include "ModuleConfig.h"
 
 #define MAX_TALENT_RANK 5
 #define MAX_TALENT_SPECS 2
@@ -11,20 +10,14 @@
 #define DUALSPEC_NPC_TEXT 50700
 #define DUALSPEC_ITEM_TEXT 50701
 
-class DualSpecConfig
+class DualSpecModuleConfig : public ModuleConfig
 {
 public:
-    DualSpecConfig();
-
-    bool Initialize();
+    DualSpecModuleConfig();
+    bool OnLoad() override;
 
 public:
     bool enabled;
     uint32 cost;
-
-private:
-    Config config;
 };
-
-#define sDualSpecConfig MaNGOS::Singleton<DualSpecConfig>::Instance()
 

@@ -1,30 +1,21 @@
 #include "DualSpecConfig.h"
-
 #include "Log.h"
-#include "SystemConfig.h"
 
-DualSpecConfig::DualSpecConfig()
-: enabled(false)
+DualSpecModuleConfig::DualSpecModuleConfig()
+: ModuleConfig("dualspec.conf")
+, enabled(false)
 , cost(0U)
 {
     
 }
 
-INSTANTIATE_SINGLETON_1(DualSpecConfig);
-
-bool DualSpecConfig::Initialize()
+bool DualSpecModuleConfig::OnLoad()
 {
-    sLog.outString("Initializing Dual Spec");
-
-    if (!config.SetSource(SYSCONFDIR"dualspec.conf"))
-    {
-        sLog.outError("Failed to open configuration file dualspec.conf");
-        return false;
-    }
+    sLog.outString("Loading Dual Spec module configuration");
 
     enabled = config.GetBoolDefault("Dualspec.Enable", false);
     cost = config.GetIntDefault("Dualspec.Cost", 10000U);
 
-    sLog.outString("Dual Spec configuration loaded");
+    sLog.outString("Dual Spec module configuration loaded");
     return true;
 }

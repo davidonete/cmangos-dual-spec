@@ -85,6 +85,8 @@ public:
     bool OnPlayerSaveActionButtons(Player* player, ActionButtonList& actionButtons);
 
 private:
+    ModuleConfig* CreateConfig() override { return new DualSpecModuleConfig(); }
+
     void LoadPlayerSpec(uint32 playerId);
     uint8 GetPlayerActiveSpec(uint32 playerId) const;
     void SetPlayerActiveSpec(Player* player, uint8 spec);

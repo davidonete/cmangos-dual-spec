@@ -16,11 +16,11 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-set(LIBRARY_NAME Dualspec)
+set(LIBRARY_NAME dualspec)
 
 #Base files
 file(GLOB dualspec_source ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
-    source_group("Dualspec" FILES ${dualspec_source})
+    source_group("dualspec" FILES ${dualspec_source})
 
 #Define base source library
 set(LIBRARY_SRCS ${dualspec_source})

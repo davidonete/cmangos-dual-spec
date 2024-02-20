@@ -63,35 +63,29 @@ class DualSpecModule : public Module
 {
 public:
     DualSpecModule() : Module() {}
-
-    /*
-    // Player hooks
-    bool OnPlayerItemUse(Player* player, Item* item);
-    bool OnPlayerGossipHello(Player* player, Creature* creature);
-    bool OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, uint32 sender, uint32 action, const std::string& code);
-    bool OnPlayerGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action, const std::string& code);
-    bool OnPlayerGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code);
-    void OnPlayerLearnTalent(Player* player, uint32 spellId);
-    void OnPlayerResetTalents(Player* player, uint32 cost);
-
-    void OnPlayerPreLoadFromDB(uint32 playerId);
-    void OnPlayerPostLoadFromDB(Player* player);
-    void OnPlayerLogOut(Player* player);
-    void OnPlayerCharacterCreated(Player* player);
-    void OnPlayerCharacterDeleted(uint32 playerId);
-    void OnPlayerSaveToDB(Player* player);
-    bool OnPlayerLoadActionButtons(Player* player, ActionButtonList& actionButtons);
-    bool OnPlayerSaveActionButtons(Player* player, ActionButtonList& actionButtons);
-    */
-
-private:
     DualSpecModuleConfig* CreateConfig() override { return new DualSpecModuleConfig(); }
     DualSpecModuleConfig* GetConfig() override { return (DualSpecModuleConfig*)GetConfigInternal(); }
 
+    // Module Hooks
     void OnInitialize() override;
 
+    // Player Hooks
+    bool OnUseItem(Player* player, Item* item) override;
+    bool OnGossipHello(Player* player, Creature* creature) override;
+    bool OnGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action, const std::string& code) override;
+    bool OnGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code) override;
+    void OnLearnTalent(Player* player, uint32 spellId) override;
+    void OnResetTalents(Player* player, uint32 cost) override;
+    void OnPreLoadFromDB(uint32 playerId) override;
+    void OnLoadFromDB(Player* player) override;
+    void OnSaveToDB(Player* player) override;
+    void OnLogOut(Player* player) override;
+    void OnCharacterCreated(Player* player) override;
+    void OnCharacterDeleted(uint32 playerId) override;
+    bool OnLoadActionButtons(Player* player, ActionButtonList& actionButtons) override;
+    bool OnSaveActionButtons(Player* player, ActionButtonList& actionButtons) override;
 
-    /*
+private:
     void LoadPlayerSpec(uint32 playerId);
     uint8 GetPlayerActiveSpec(uint32 playerId) const;
     void SetPlayerActiveSpec(Player* player, uint8 spec);
@@ -114,7 +108,6 @@ private:
 
     void ActivatePlayerSpec(Player* player, uint8 spec);
     void AddDualSpecItem(Player* player);
-    */
 
 private:
     std::map<uint32, DualSpecPlayerTalentMap[MAX_TALENT_SPECS]> playersTalents;
@@ -122,5 +115,5 @@ private:
     std::map<uint32, std::string[MAX_TALENT_SPECS]> playersSpecNames;
 };
 
-inline DualSpecModule* dualSpecModule = new DualSpecModule();
+static DualSpecModule dualSpecModule;
 #endif

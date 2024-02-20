@@ -19,10 +19,9 @@ void DualSpecModule::OnInitialize()
     }
 }
 
-/*
-bool DualSpecModule::OnPlayerItemUse(Player* player, Item* item)
+bool DualSpecModule::OnUseItem(Player* player, Item* item)
 {
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
     {
         if (player && item)
         {
@@ -112,9 +111,9 @@ bool DualSpecModule::OnPlayerItemUse(Player* player, Item* item)
     return false;
 }
 
-bool DualSpecModule::OnPlayerGossipHello(Player* player, Creature* creature)
+bool DualSpecModule::OnGossipHello(Player* player, Creature* creature)
 {
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
     {
         if (player && creature)
         {
@@ -125,7 +124,7 @@ bool DualSpecModule::OnPlayerGossipHello(Player* player, Creature* creature)
             const uint32 playerId = player->GetObjectGuid().GetCounter();
             player->GetPlayerMenu()->ClearMenus();
 
-            const uint32 cost = sDualSpecConfig.cost;
+            const uint32 cost = GetConfig()->cost;
             const std::string costStr = std::to_string(cost > 0U ? cost / 10000U : 0U);
             const std::string areYouSure = player->GetSession()->GetMangosString(DUAL_SPEC_ARE_YOU_SURE_BEGIN) + costStr + player->GetSession()->GetMangosString(DUAL_SPEC_ARE_YOU_SURE_END);
 
@@ -157,43 +156,9 @@ bool DualSpecModule::OnPlayerGossipHello(Player* player, Creature* creature)
     return false;
 }
 
-bool DualSpecModule::OnPlayerGossipSelect(Player* player, const ObjectGuid& guid, uint32 sender, uint32 action, const std::string& code)
+bool DualSpecModule::OnGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action, const std::string& code)
 {
-    // TO DO: Move this to generic module system once done
-    if (player)
-    {
-        if (guid.IsAnyTypeCreature())
-        {
-            Creature* creature = player->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_NONE);
-            if (creature)
-            {
-                return OnPlayerGossipSelect(player, creature, sender, action, code);
-            }
-        }
-        else if (guid.IsGameObject())
-        {
-            GameObject* gameObject = player->GetGameObjectIfCanInteractWith(guid);
-            if (gameObject)
-            {
-                //return OnPlayerGossipSelect(player, gameObject, sender, action, code);
-            }
-        }
-        else if (guid.IsItem())
-        {
-            Item* item = player->GetItemByGuid(guid);
-            if (item)
-            {
-                return OnPlayerGossipSelect(player, item, sender, action, code);
-            }
-        }
-    }
-
-    return false;
-}
-
-bool DualSpecModule::OnPlayerGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action, const std::string& code)
-{
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
     {
         if (player && creature)
         {
@@ -225,11 +190,11 @@ bool DualSpecModule::OnPlayerGossipSelect(Player* player, Unit* creature, uint32
             {
                 case GOSSIP_ACTION_INFO_DEF:
                 {
-                    if (player->GetMoney() >= sDualSpecConfig.cost)
+                    if (player->GetMoney() >= GetConfig()->cost)
                     {
-                        player->ModifyMoney(-int32(sDualSpecConfig.cost));
+                        player->ModifyMoney(-int32(GetConfig()->cost));
                         SetPlayerSpecCount(player, GetPlayerSpecCount(playerId) + 1);
-                        OnPlayerGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "");
+                        OnGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "");
                         AddDualSpecItem(player);
                     }
                     else
@@ -247,7 +212,7 @@ bool DualSpecModule::OnPlayerGossipSelect(Player* player, Unit* creature, uint32
                     {
                         player->GetPlayerMenu()->CloseGossip();
                         player->GetSession()->SendNotification(player->GetSession()->GetMangosString(DUAL_SPEC_ALREADY_ON_SPEC));
-                        OnPlayerGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "");
+                        OnGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "");
                     }
                     else
                     {
@@ -263,7 +228,7 @@ bool DualSpecModule::OnPlayerGossipSelect(Player* player, Unit* creature, uint32
                     {
                         player->GetPlayerMenu()->CloseGossip();
                         player->GetSession()->SendNotification(player->GetSession()->GetMangosString(DUAL_SPEC_ALREADY_ON_SPEC));
-                        OnPlayerGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "");
+                        OnGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "");
                     }
                     else
                     {
@@ -311,9 +276,9 @@ bool DualSpecModule::OnPlayerGossipSelect(Player* player, Unit* creature, uint32
     return false;
 }
 
-bool DualSpecModule::OnPlayerGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code)
+bool DualSpecModule::OnGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code)
 {
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
     {
         if (player)
         {
@@ -393,9 +358,9 @@ bool DualSpecModule::OnPlayerGossipSelect(Player* player, Item* item, uint32 sen
     return false;
 }
 
-void DualSpecModule::OnPlayerLearnTalent(Player* player, uint32 spellId)
+void DualSpecModule::OnLearnTalent(Player* player, uint32 spellId)
 {
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
     {
         if (player)
         {
@@ -418,9 +383,9 @@ void DualSpecModule::OnPlayerLearnTalent(Player* player, uint32 spellId)
     }
 }
 
-void DualSpecModule::OnPlayerResetTalents(Player* player, uint32 cost)
+void DualSpecModule::OnResetTalents(Player* player, uint32 cost)
 {
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
     {
         if (player)
         {
@@ -438,26 +403,37 @@ void DualSpecModule::OnPlayerResetTalents(Player* player, uint32 cost)
     }
 }
 
-void DualSpecModule::OnPlayerPreLoadFromDB(uint32 playerId)
+void DualSpecModule::OnPreLoadFromDB(uint32 playerId)
 {
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
     {
         LoadPlayerSpec(playerId);
     }
 }
 
-void DualSpecModule::OnPlayerPostLoadFromDB(Player* player)
+void DualSpecModule::OnLoadFromDB(Player* player)
 {
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
     {
         LoadPlayerTalents(player);
         LoadPlayerSpecNames(player);
     }
 }
 
-void DualSpecModule::OnPlayerLogOut(Player* player)
+void DualSpecModule::OnSaveToDB(Player* player)
 {
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
+    {
+        const uint32 playerId = player->GetObjectGuid().GetCounter();
+        SavePlayerTalents(playerId);
+        SavePlayerSpec(playerId);
+        SavePlayerSpecNames(player);
+    }
+}
+
+void DualSpecModule::OnLogOut(Player* player)
+{
+    if (GetConfig()->enabled)
     {
         if (player)
         {
@@ -469,9 +445,9 @@ void DualSpecModule::OnPlayerLogOut(Player* player)
     }
 }
 
-void DualSpecModule::OnPlayerCharacterCreated(Player* player)
+void DualSpecModule::OnCharacterCreated(Player* player)
 {
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
     {
         if (player)
         {
@@ -484,20 +460,9 @@ void DualSpecModule::OnPlayerCharacterCreated(Player* player)
     }
 }
 
-void DualSpecModule::OnPlayerSaveToDB(Player* player)
+void DualSpecModule::OnCharacterDeleted(uint32 playerId)
 {
-    if (sDualSpecConfig.enabled)
-    {
-        const uint32 playerId = player->GetObjectGuid().GetCounter();
-        SavePlayerTalents(playerId);
-        SavePlayerSpec(playerId);
-        SavePlayerSpecNames(player);
-    }
-}
-
-void DualSpecModule::OnPlayerCharacterDeleted(uint32 playerId)
-{
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
     {
         CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u';", playerId);
         CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent_name` WHERE `guid` = '%u';", playerId);
@@ -506,9 +471,9 @@ void DualSpecModule::OnPlayerCharacterDeleted(uint32 playerId)
     }
 }
 
-bool DualSpecModule::OnPlayerLoadActionButtons(Player* player, ActionButtonList& actionButtons)
+bool DualSpecModule::OnLoadActionButtons(Player* player, ActionButtonList& actionButtons)
 {
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
     {
         if (player)
         {
@@ -555,9 +520,9 @@ bool DualSpecModule::OnPlayerLoadActionButtons(Player* player, ActionButtonList&
     return false;
 }
 
-bool DualSpecModule::OnPlayerSaveActionButtons(Player* player, ActionButtonList& actionButtons)
+bool DualSpecModule::OnSaveActionButtons(Player* player, ActionButtonList& actionButtons)
 {
-    if (sDualSpecConfig.enabled)
+    if (GetConfig()->enabled)
     {
         if (player)
         {

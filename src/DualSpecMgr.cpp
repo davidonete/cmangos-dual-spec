@@ -7,6 +7,8 @@
 #include "Globals/ObjectMgr.h"
 #include "Spells/SpellMgr.h"
 
+DualSpecMgr dualSpecMgr;
+
 void DualSpecMgr::Init()
 {
     sDualSpecConfig.Initialize();

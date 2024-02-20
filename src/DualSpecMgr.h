@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <map>
 
+#include "ModuleMgr.h"
+
 class Creature;
 class GameObject;
 class Item;
@@ -58,10 +60,10 @@ struct DualSpecPlayerStatus
 typedef std::unordered_map<uint32, DualSpecPlayerTalent> DualSpecPlayerTalentMap;
 typedef std::map<uint8, ActionButton> ActionButtonList;
 
-class DualSpecMgr
+class DualSpecMgr : public Module
 {
 public:
-    DualSpecMgr() {}
+    DualSpecMgr() : Module() {}
 
     void Init();
 
@@ -113,5 +115,5 @@ private:
     std::map<uint32, std::string[MAX_TALENT_SPECS]> playersSpecNames;
 };
 
-#define sDualSpecMgr MaNGOS::Singleton<DualSpecMgr>::Instance()
+extern DualSpecMgr dualSpecMgr;
 #endif

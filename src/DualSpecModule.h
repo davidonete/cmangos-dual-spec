@@ -2,7 +2,7 @@
 #define MANGOS_DUALSPEC_MGR_H
 
 #include "Module.h"
-#include "DualSpecConfig.h"
+#include "DualSpecModuleConfig.h"
 
 #include <unordered_map>
 

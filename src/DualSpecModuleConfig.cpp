@@ -1,4 +1,4 @@
-#include "DualSpecConfig.h"
+#include "DualSpecModuleConfig.h"
 #include "Log.h"
 
 DualSpecModuleConfig::DualSpecModuleConfig()

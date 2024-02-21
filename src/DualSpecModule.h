@@ -33,8 +33,8 @@ public:
     // Player Hooks
     bool OnUseItem(Player* player, Item* item) override;
     bool OnGossipHello(Player* player, Creature* creature) override;
-    bool OnGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action, const std::string& code) override;
-    bool OnGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code) override;
+    bool OnGossipSelect(Player* player, Unit* creature, uint32 sender, uint32 action, const std::string& code, uint32 gossipListId) override;
+    bool OnGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code, uint32 gossipListId) override;
     void OnLearnTalent(Player* player, uint32 spellId) override;
     void OnResetTalents(Player* player, uint32 cost) override;
     void OnPreLoadFromDB(uint32 playerId) override;

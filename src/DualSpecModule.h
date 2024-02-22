@@ -1,5 +1,5 @@
-#ifndef MANGOS_DUALSPEC_MGR_H
-#define MANGOS_DUALSPEC_MGR_H
+#ifndef MANGOS_DUALSPEC_MODULE_H
+#define MANGOS_DUALSPEC_MODULE_H
 
 #include "Module.h"
 #include "DualSpecModuleConfig.h"

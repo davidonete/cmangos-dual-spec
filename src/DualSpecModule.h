@@ -25,7 +25,7 @@ class DualSpecModule : public Module
 public:
     DualSpecModule() : Module("DualSpec") {}
     DualSpecModuleConfig* CreateConfig() override { return new DualSpecModuleConfig(); }
-    DualSpecModuleConfig* GetConfig() override { return (DualSpecModuleConfig*)GetConfigInternal(); }
+    const DualSpecModuleConfig* GetConfig() const override { return (DualSpecModuleConfig*)GetConfigInternal(); }
 
     // Module Hooks
     void OnInitialize() override;

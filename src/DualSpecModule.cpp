@@ -156,7 +156,7 @@ bool DualSpecModule::OnPreGossipHello(Player* player, Creature* creature)
     return false;
 }
 
-bool DualSpecModule::OnPreGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action, const std::string& code, uint32 gossipListId)
+bool DualSpecModule::OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action, const std::string& code, uint32 gossipListId)
 {
     if (GetConfig()->enabled)
     {
@@ -194,7 +194,7 @@ bool DualSpecModule::OnPreGossipSelect(Player* player, Creature* creature, uint3
                     {
                         player->ModifyMoney(-int32(GetConfig()->cost));
                         SetPlayerSpecCount(player, GetPlayerSpecCount(playerId) + 1);
-                        OnPreGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "", gossipListId);
+                        OnGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "", gossipListId);
                         AddDualSpecItem(player);
                     }
                     else
@@ -212,7 +212,7 @@ bool DualSpecModule::OnPreGossipSelect(Player* player, Creature* creature, uint3
                     {
                         player->GetPlayerMenu()->CloseGossip();
                         player->GetSession()->SendNotification(player->GetSession()->GetMangosString(DUAL_SPEC_ALREADY_ON_SPEC));
-                        OnPreGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "", gossipListId);
+                        OnGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "", gossipListId);
                     }
                     else
                     {
@@ -228,7 +228,7 @@ bool DualSpecModule::OnPreGossipSelect(Player* player, Creature* creature, uint3
                     {
                         player->GetPlayerMenu()->CloseGossip();
                         player->GetSession()->SendNotification(player->GetSession()->GetMangosString(DUAL_SPEC_ALREADY_ON_SPEC));
-                        OnPreGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "", gossipListId);
+                        OnGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "", gossipListId);
                     }
                     else
                     {
@@ -276,7 +276,7 @@ bool DualSpecModule::OnPreGossipSelect(Player* player, Creature* creature, uint3
     return false;
 }
 
-bool DualSpecModule::OnPreGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code, uint32 gossipListId)
+bool DualSpecModule::OnGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code, uint32 gossipListId)
 {
     if (GetConfig()->enabled)
     {

@@ -487,7 +487,7 @@ namespace dualspec_module
         if (GetConfig()->enabled)
         {
 #ifdef ENABLE_PLAYERBOTS
-            if (sRandomPlayerbotMgr.IsFreeBot(player))
+            if (sRandomPlayerbotMgr.IsFreeBot(playerId))
                 return;
 #endif
 
@@ -545,7 +545,7 @@ namespace dualspec_module
             {
 #ifdef ENABLE_PLAYERBOTS
                 if (sRandomPlayerbotMgr.IsFreeBot(player))
-                    return;
+                    return false;
 #endif
 
                 const uint32 playerId = player->GetObjectGuid().GetCounter();
@@ -599,7 +599,7 @@ namespace dualspec_module
             {
 #ifdef ENABLE_PLAYERBOTS
                 if (sRandomPlayerbotMgr.IsFreeBot(player))
-                    return;
+                    return false;
 #endif
 
                 const uint32 playerId = player->GetObjectGuid().GetCounter();

@@ -7,6 +7,10 @@
 #include "Globals/ObjectMgr.h"
 #include "Spells/SpellMgr.h"
 
+#ifdef ENABLE_PLAYERBOTS
+#include "PlayerbotAI.h"
+#endif
+
 namespace dualspec_module
 {
     void DualSpecModule::OnInitialize()
@@ -30,6 +34,11 @@ namespace dualspec_module
                 // Check if using dual spec item
                 if (item->GetEntry() != DUALSPEC_ITEM_ENTRY)
                     return false;
+
+#ifdef ENABLE_PLAYERBOTS
+                if (sRandomPlayerbotMgr.IsFreeBot(player))
+                    return false;
+#endif
 
                 const uint32 playerId = player->GetObjectGuid().GetCounter();
                 player->GetPlayerMenu()->ClearMenus();
@@ -123,6 +132,11 @@ namespace dualspec_module
                 if (creature->GetEntry() != DUALSPEC_NPC_ENTRY)
                     return false;
 
+#ifdef ENABLE_PLAYERBOTS
+                if (sRandomPlayerbotMgr.IsFreeBot(player))
+                    return false;
+#endif
+
                 const uint32 playerId = player->GetObjectGuid().GetCounter();
                 player->GetPlayerMenu()->ClearMenus();
 
@@ -167,6 +181,11 @@ namespace dualspec_module
                 // Check if speaking with dual spec npc
                 if (creature->GetEntry() != DUALSPEC_NPC_ENTRY)
                     return false;
+
+#ifdef ENABLE_PLAYERBOTS
+                if (sRandomPlayerbotMgr.IsFreeBot(player))
+                    return false;
+#endif
 
                 const uint32 playerId = player->GetObjectGuid().GetCounter();
                 player->GetPlayerMenu()->ClearMenus();
@@ -288,6 +307,11 @@ namespace dualspec_module
                 if (item->GetEntry() != DUALSPEC_ITEM_ENTRY)
                     return false;
 
+#ifdef ENABLE_PLAYERBOTS
+                if (sRandomPlayerbotMgr.IsFreeBot(player))
+                    return false;
+#endif
+
                 const uint32 playerId = player->GetObjectGuid().GetCounter();
                 player->GetPlayerMenu()->ClearMenus();
 
@@ -366,6 +390,11 @@ namespace dualspec_module
         {
             if (player)
             {
+#ifdef ENABLE_PLAYERBOTS
+                if (sRandomPlayerbotMgr.IsFreeBot(player))
+                    return;
+#endif
+
                 SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spellId);
                 if (!spellInfo)
                 {
@@ -391,6 +420,11 @@ namespace dualspec_module
         {
             if (player)
             {
+#ifdef ENABLE_PLAYERBOTS
+                if (sRandomPlayerbotMgr.IsFreeBot(player))
+                    return;
+#endif
+
                 const uint32 playerId = player->GetObjectGuid().GetCounter();
                 DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(playerId);
                 for (auto& playerTalentsPair : playerTalents)
@@ -409,6 +443,11 @@ namespace dualspec_module
     {
         if (GetConfig()->enabled)
         {
+#ifdef ENABLE_PLAYERBOTS
+            if (sRandomPlayerbotMgr.IsFreeBot(playerId))
+                return;
+#endif
+
             LoadPlayerSpec(playerId);
         }
     }
@@ -417,6 +456,11 @@ namespace dualspec_module
     {
         if (GetConfig()->enabled)
         {
+#ifdef ENABLE_PLAYERBOTS
+            if (sRandomPlayerbotMgr.IsFreeBot(player))
+                return;
+#endif
+
             LoadPlayerTalents(player);
             LoadPlayerSpecNames(player);
         }
@@ -426,6 +470,11 @@ namespace dualspec_module
     {
         if (GetConfig()->enabled)
         {
+#ifdef ENABLE_PLAYERBOTS
+            if (sRandomPlayerbotMgr.IsFreeBot(player))
+                return;
+#endif
+
             const uint32 playerId = player->GetObjectGuid().GetCounter();
             SavePlayerTalents(playerId);
             SavePlayerSpec(playerId);
@@ -437,6 +486,11 @@ namespace dualspec_module
     {
         if (GetConfig()->enabled)
         {
+#ifdef ENABLE_PLAYERBOTS
+            if (sRandomPlayerbotMgr.IsFreeBot(player))
+                return;
+#endif
+
             CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u';", playerId);
             CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent_name` WHERE `guid` = '%u';", playerId);
             CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_action` WHERE `guid` = '%u';", playerId);
@@ -450,6 +504,11 @@ namespace dualspec_module
         {
             if (player)
             {
+#ifdef ENABLE_PLAYERBOTS
+                if (sRandomPlayerbotMgr.IsFreeBot(player))
+                    return;
+#endif
+
                 const uint32 playerId = player->GetObjectGuid().GetCounter();
                 playersTalents.erase(playerId);
                 playersStatus.erase(playerId);
@@ -464,6 +523,11 @@ namespace dualspec_module
         {
             if (player)
             {
+#ifdef ENABLE_PLAYERBOTS
+                if (sRandomPlayerbotMgr.IsFreeBot(player))
+                    return;
+#endif
+
                 // Create the default data
                 const uint32 playerId = player->GetObjectGuid().GetCounter();
                 playersTalents[playerId];
@@ -479,6 +543,11 @@ namespace dualspec_module
         {
             if (player)
             {
+#ifdef ENABLE_PLAYERBOTS
+                if (sRandomPlayerbotMgr.IsFreeBot(player))
+                    return;
+#endif
+
                 const uint32 playerId = player->GetObjectGuid().GetCounter();
                 const uint8 activeSpec = GetPlayerActiveSpec(playerId);
             
@@ -528,6 +597,11 @@ namespace dualspec_module
         {
             if (player)
             {
+#ifdef ENABLE_PLAYERBOTS
+                if (sRandomPlayerbotMgr.IsFreeBot(player))
+                    return;
+#endif
+
                 const uint32 playerId = player->GetObjectGuid().GetCounter();
                 const uint8 activeSpec = GetPlayerActiveSpec(playerId);
 

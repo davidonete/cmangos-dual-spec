@@ -8,7 +8,7 @@
 #include "Spells/SpellMgr.h"
 
 #ifdef ENABLE_PLAYERBOTS
-#include "PlayerbotAI.h"
+#include "playerbot/PlayerbotAI.h"
 #endif
 
 namespace dualspec_module

@@ -1,5 +1,4 @@
 #include "DualSpecModuleConfig.h"
-#include "Log.h"
 
 DualSpecModuleConfig::DualSpecModuleConfig()
 : ModuleConfig("dualspec.conf")

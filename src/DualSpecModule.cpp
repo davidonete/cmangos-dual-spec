@@ -1,4 +1,4 @@
-#include "DualSpecModule.h"
+#include "DualspecModule.h"
 
 #include "AI/ScriptDevAI/include/sc_gossip.h"
 #include "Entities/GossipDef.h"

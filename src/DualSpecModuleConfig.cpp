@@ -1,4 +1,4 @@
-#include "DualSpecModuleConfig.h"
+#include "DualspecModuleConfig.h"
 
 DualSpecModuleConfig::DualSpecModuleConfig()
 : ModuleConfig("dualspec.conf")

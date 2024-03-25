@@ -27,7 +27,7 @@ set(LIBRARY_SRCS ${dualspec_source})
 
 # Define ENABLE_PLAYERBOTS if need
 if (BUILD_PLAYERBOTS)
-	include_directories(${CMAKE_SOURCE_DIR}/src/modules/playerbots)
+	include_directories(${CMAKE_SOURCE_DIR}/src/modules/PlayerBots)
 	add_definitions(-DENABLE_PLAYERBOTS)
 endif()
 

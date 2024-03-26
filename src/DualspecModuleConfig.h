@@ -1,5 +1,5 @@
 #pragma once
-#include "../../modules/src/ModuleConfig.h"
+#include "ModuleConfig.h"
 
 #define MAX_TALENT_RANK 5
 #define MAX_TALENT_SPECS 2

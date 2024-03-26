@@ -8,24 +8,24 @@
 
 namespace dualspec_module
 {
-    struct DualSpecPlayerTalent
+    struct DualspecPlayerTalent
     {
         uint8 state;
         uint8 spec;
     };
 
-    struct DualSpecPlayerStatus
+    struct DualspecPlayerStatus
     {
         uint8 specCount;
         uint8 activeSpec;
     };
 
-    typedef std::unordered_map<uint32, DualSpecPlayerTalent> DualSpecPlayerTalentMap;
+    typedef std::unordered_map<uint32, DualspecPlayerTalent> DualSpecPlayerTalentMap;
 
-    class DualSpecModule : public Module
+    class DualspecModule : public Module
     {
     public:
-        DualSpecModule() : Module("DualSpec") {}
+        DualspecModule() : Module("DualSpec") {}
         DualSpecModuleConfig* CreateConfig() override { return new DualSpecModuleConfig(); }
         const DualSpecModuleConfig* GetConfig() const override { return (DualSpecModuleConfig*)GetConfigInternal(); }
 
@@ -75,9 +75,9 @@ namespace dualspec_module
     private:
         std::map<uint32, DualSpecPlayerTalentMap[MAX_TALENT_SPECS]> playersTalents;
         std::map<uint32, std::string[MAX_TALENT_SPECS]> playersSpecNames;
-        std::map<uint32, DualSpecPlayerStatus> playersStatus;
+        std::map<uint32, DualspecPlayerStatus> playersStatus;
     };
 
-    static DualSpecModule dualSpecModule;
+    static DualspecModule dualSpecModule;
 }
 #endif

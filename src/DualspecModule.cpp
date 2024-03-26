@@ -13,7 +13,7 @@
 
 namespace dualspec_module
 {
-    void DualSpecModule::OnInitialize()
+    void DualspecModule::OnInitialize()
     {
         if (GetConfig()->enabled)
         {
@@ -25,7 +25,7 @@ namespace dualspec_module
         }
     }
 
-    bool DualSpecModule::OnUseItem(Player* player, Item* item)
+    bool DualspecModule::OnUseItem(Player* player, Item* item)
     {
         if (GetConfig()->enabled)
         {
@@ -122,7 +122,7 @@ namespace dualspec_module
         return false;
     }
 
-    bool DualSpecModule::OnPreGossipHello(Player* player, Creature* creature)
+    bool DualspecModule::OnPreGossipHello(Player* player, Creature* creature)
     {
         if (GetConfig()->enabled)
         {
@@ -172,7 +172,7 @@ namespace dualspec_module
         return false;
     }
 
-    bool DualSpecModule::OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action, const std::string& code, uint32 gossipListId)
+    bool DualspecModule::OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action, const std::string& code, uint32 gossipListId)
     {
         if (GetConfig()->enabled)
         {
@@ -297,7 +297,7 @@ namespace dualspec_module
         return false;
     }
 
-    bool DualSpecModule::OnGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code, uint32 gossipListId)
+    bool DualspecModule::OnGossipSelect(Player* player, Item* item, uint32 sender, uint32 action, const std::string& code, uint32 gossipListId)
     {
         if (GetConfig()->enabled)
         {
@@ -384,7 +384,7 @@ namespace dualspec_module
         return false;
     }
 
-    void DualSpecModule::OnLearnTalent(Player* player, uint32 spellId)
+    void DualspecModule::OnLearnTalent(Player* player, uint32 spellId)
     {
         if (GetConfig()->enabled)
         {
@@ -414,7 +414,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::OnResetTalents(Player* player, uint32 cost)
+    void DualspecModule::OnResetTalents(Player* player, uint32 cost)
     {
         if (GetConfig()->enabled)
         {
@@ -430,7 +430,7 @@ namespace dualspec_module
                 for (auto& playerTalentsPair : playerTalents)
                 {
                     const uint32 spellId = playerTalentsPair.first;
-                    DualSpecPlayerTalent& playerTalent = playerTalentsPair.second;
+                    DualspecPlayerTalent& playerTalent = playerTalentsPair.second;
                     playerTalent.state = PLAYERSPELL_REMOVED;
                 }
 
@@ -439,7 +439,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::OnPreLoadFromDB(uint32 playerId)
+    void DualspecModule::OnPreLoadFromDB(uint32 playerId)
     {
         if (GetConfig()->enabled)
         {
@@ -452,7 +452,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::OnLoadFromDB(Player* player)
+    void DualspecModule::OnLoadFromDB(Player* player)
     {
         if (GetConfig()->enabled)
         {
@@ -466,7 +466,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::OnSaveToDB(Player* player)
+    void DualspecModule::OnSaveToDB(Player* player)
     {
         if (GetConfig()->enabled)
         {
@@ -482,7 +482,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::OnDeleteFromDB(uint32 playerId)
+    void DualspecModule::OnDeleteFromDB(uint32 playerId)
     {
         if (GetConfig()->enabled)
         {
@@ -498,7 +498,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::OnLogOut(Player* player)
+    void DualspecModule::OnLogOut(Player* player)
     {
         if (GetConfig()->enabled)
         {
@@ -517,7 +517,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::OnCharacterCreated(Player* player)
+    void DualspecModule::OnCharacterCreated(Player* player)
     {
         if (GetConfig()->enabled)
         {
@@ -537,7 +537,7 @@ namespace dualspec_module
         }
     }
 
-    bool DualSpecModule::OnLoadActionButtons(Player* player, ActionButtonList& actionButtons)
+    bool DualspecModule::OnLoadActionButtons(Player* player, ActionButtonList& actionButtons)
     {
         if (GetConfig()->enabled)
         {
@@ -591,7 +591,7 @@ namespace dualspec_module
         return false;
     }
 
-    bool DualSpecModule::OnSaveActionButtons(Player* player, ActionButtonList& actionButtons)
+    bool DualspecModule::OnSaveActionButtons(Player* player, ActionButtonList& actionButtons)
     {
         if (GetConfig()->enabled)
         {
@@ -668,7 +668,7 @@ namespace dualspec_module
         return false;
     }
 
-    void DualSpecModule::LoadPlayerSpec(uint32 playerId)
+    void DualspecModule::LoadPlayerSpec(uint32 playerId)
     {
         auto result = CharacterDatabase.PQuery("SELECT `spec_count`, `active_spec` FROM `custom_dualspec_characters` WHERE `guid` = '%u';", playerId);
         if (result)
@@ -692,7 +692,7 @@ namespace dualspec_module
         }
     }
 
-    uint8 DualSpecModule::GetPlayerActiveSpec(uint32 playerId) const
+    uint8 DualspecModule::GetPlayerActiveSpec(uint32 playerId) const
     {
         auto playerStatusIt = playersStatus.find(playerId);
         if (playerStatusIt != playersStatus.end())
@@ -704,7 +704,7 @@ namespace dualspec_module
         return 0;
     }
 
-    void DualSpecModule::SetPlayerActiveSpec(Player* player, uint8 spec)
+    void DualspecModule::SetPlayerActiveSpec(Player* player, uint8 spec)
     {
         if (player)
         {
@@ -721,7 +721,7 @@ namespace dualspec_module
         }
     }
 
-    uint8 DualSpecModule::GetPlayerSpecCount(uint32 playerId) const
+    uint8 DualspecModule::GetPlayerSpecCount(uint32 playerId) const
     {
         auto playerStatusIt = playersStatus.find(playerId);
         if (playerStatusIt != playersStatus.end())
@@ -733,7 +733,7 @@ namespace dualspec_module
         return 1;
     }
 
-    void DualSpecModule::SetPlayerSpecCount(Player* player, uint8 count)
+    void DualspecModule::SetPlayerSpecCount(Player* player, uint8 count)
     {
         if (player)
         {
@@ -750,7 +750,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::SavePlayerSpec(uint32 playerId)
+    void DualspecModule::SavePlayerSpec(uint32 playerId)
     {
         CharacterDatabase.PExecute("UPDATE `custom_dualspec_characters` SET `spec_count` = '%u', `active_spec` = '%u' WHERE `guid` = '%u';",
             GetPlayerSpecCount(playerId),
@@ -759,7 +759,7 @@ namespace dualspec_module
         );
     }
 
-    void DualSpecModule::LoadPlayerSpecNames(Player* player)
+    void DualspecModule::LoadPlayerSpecNames(Player* player)
     {
         if (player)
         {
@@ -780,7 +780,7 @@ namespace dualspec_module
         }
     }
 
-    const std::string& DualSpecModule::GetPlayerSpecName(Player* player, uint8 spec) const
+    const std::string& DualspecModule::GetPlayerSpecName(Player* player, uint8 spec) const
     {
         if (player)
         {
@@ -795,7 +795,7 @@ namespace dualspec_module
         MANGOS_ASSERT(false);
     }
 
-    void DualSpecModule::SetPlayerSpecName(Player* player, uint8 spec, const std::string& name)
+    void DualspecModule::SetPlayerSpecName(Player* player, uint8 spec, const std::string& name)
     {
         if (player)
         {
@@ -812,7 +812,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::SavePlayerSpecNames(Player* player)
+    void DualspecModule::SavePlayerSpecNames(Player* player)
     {
         if (player)
         {
@@ -839,7 +839,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::LoadPlayerTalents(Player* player)
+    void DualspecModule::LoadPlayerTalents(Player* player)
     {
         if (player)
         {
@@ -894,7 +894,7 @@ namespace dualspec_module
         }
     }
 
-    bool DualSpecModule::PlayerHasTalent(Player* player, uint32 spellId, uint8 spec)
+    bool DualspecModule::PlayerHasTalent(Player* player, uint32 spellId, uint8 spec)
     {
         if (player)
         {
@@ -910,7 +910,7 @@ namespace dualspec_module
         return false;
     }
 
-    DualSpecPlayerTalentMap& DualSpecModule::GetPlayerTalents(uint32 playerId, int8 spec)
+    DualSpecPlayerTalentMap& DualspecModule::GetPlayerTalents(uint32 playerId, int8 spec)
     {
         auto playerTalentSpecIt = playersTalents.find(playerId);
         if (playerTalentSpecIt != playersTalents.end())
@@ -923,7 +923,7 @@ namespace dualspec_module
         return playersTalents[0][0];
     }
 
-    void DualSpecModule::AddPlayerTalent(uint32 playerId, uint32 spellId, uint8 spec, bool learned)
+    void DualspecModule::AddPlayerTalent(uint32 playerId, uint32 spellId, uint8 spec, bool learned)
     {
         auto& playerTalents = playersTalents[playerId][spec];
 
@@ -958,7 +958,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::SavePlayerTalents(uint32 playerId)
+    void DualspecModule::SavePlayerTalents(uint32 playerId)
     {
         for (uint8 i = 0; i < MAX_TALENT_SPECS; ++i)
         {
@@ -966,7 +966,7 @@ namespace dualspec_module
             for (auto playerTalentsIt = playerTalents.begin(); playerTalentsIt != playerTalents.end();)
             {
                 const uint32 spellId = playerTalentsIt->first;
-                DualSpecPlayerTalent& playerTalent = playerTalentsIt->second;
+                DualspecPlayerTalent& playerTalent = playerTalentsIt->second;
 
                 if (playerTalent.state == PLAYERSPELL_REMOVED || playerTalent.state == PLAYERSPELL_CHANGED)
                 {
@@ -999,7 +999,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::SendPlayerActionButtons(const Player* player, bool clear) const
+    void DualspecModule::SendPlayerActionButtons(const Player* player, bool clear) const
     {
         if (player)
         {
@@ -1016,7 +1016,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::ActivatePlayerSpec(Player* player, uint8 spec)
+    void DualspecModule::ActivatePlayerSpec(Player* player, uint8 spec)
     {
         if (player)
         {
@@ -1181,7 +1181,7 @@ namespace dualspec_module
         }
     }
 
-    void DualSpecModule::AddDualSpecItem(Player* player)
+    void DualspecModule::AddDualSpecItem(Player* player)
     {
         if (player)
         {

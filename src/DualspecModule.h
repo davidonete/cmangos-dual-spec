@@ -77,7 +77,5 @@ namespace dualspec_module
         std::map<uint32, std::string[MAX_TALENT_SPECS]> playersSpecNames;
         std::map<uint32, DualspecPlayerStatus> playersStatus;
     };
-
-    static DualspecModule dualSpecModule;
 }
 #endif

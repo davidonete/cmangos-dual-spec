@@ -1,7 +1,7 @@
 #include "DualspecModuleConfig.h"
 
 DualSpecModuleConfig::DualSpecModuleConfig()
-: ModuleConfig("dualspec.conf")
+: CmangosModuleConfig("dualspec.conf")
 , enabled(false)
 , cost(0U)
 {

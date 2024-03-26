@@ -1,5 +1,5 @@
 #pragma once
-#include "ModuleConfig.h"
+#include "CmangosModuleConfig.h"
 
 #define MAX_TALENT_RANK 5
 #define MAX_TALENT_SPECS 2
@@ -36,7 +36,7 @@ enum DualSpecMessages
     DUAL_SPEC_ERR_ITEM_CREATE,
 };
 
-class DualSpecModuleConfig : public ModuleConfig
+class DualSpecModuleConfig : public CmangosModuleConfig
 {
 public:
     DualSpecModuleConfig();

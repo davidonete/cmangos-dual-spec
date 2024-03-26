@@ -1,7 +1,7 @@
 #ifndef MANGOS_DUALSPEC_MODULE_H
 #define MANGOS_DUALSPEC_MODULE_H
 
-#include "Module.h"
+#include "CmangosModule.h"
 #include "DualspecModuleConfig.h"
 
 #include <unordered_map>
@@ -22,10 +22,10 @@ namespace dualspec_module
 
     typedef std::unordered_map<uint32, DualspecPlayerTalent> DualSpecPlayerTalentMap;
 
-    class DualspecModule : public Module
+    class DualspecModule : public CmangosModule
     {
     public:
-        DualspecModule() : Module("DualSpec") {}
+        DualspecModule() : CmangosModule("DualSpec") {}
         DualSpecModuleConfig* CreateConfig() override { return new DualSpecModuleConfig(); }
         const DualSpecModuleConfig* GetConfig() const override { return (DualSpecModuleConfig*)GetConfigInternal(); }
 

@@ -11,8 +11,19 @@
 #include "playerbot/PlayerbotAI.h"
 #endif
 
-namespace dualspec_module
+namespace cmangos_module
 {
+    DualspecModule::DualspecModule()
+    : Module("DualSpec", new DualSpecModuleConfig())
+    {
+        
+    }
+
+    const DualSpecModuleConfig* DualspecModule::GetConfig() const
+    {
+        return (DualSpecModuleConfig*)Module::GetConfig();
+    }
+
     void DualspecModule::OnInitialize()
     {
         if (GetConfig()->enabled)

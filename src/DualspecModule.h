@@ -1,12 +1,12 @@
-#ifndef MANGOS_DUALSPEC_MODULE_H
-#define MANGOS_DUALSPEC_MODULE_H
+#ifndef CMANGOS_MODULE_DUALSPEC_H
+#define CMANGOS_MODULE_DUALSPEC_H
 
-#include "CmangosModule.h"
+#include "Module.h"
 #include "DualspecModuleConfig.h"
 
 #include <unordered_map>
 
-namespace dualspec_module
+namespace cmangos_module
 {
     struct DualspecPlayerTalent
     {
@@ -22,12 +22,11 @@ namespace dualspec_module
 
     typedef std::unordered_map<uint32, DualspecPlayerTalent> DualSpecPlayerTalentMap;
 
-    class DualspecModule : public CmangosModule
+    class DualspecModule : public Module
     {
     public:
-        DualspecModule() : CmangosModule("DualSpec") {}
-        DualSpecModuleConfig* CreateConfig() override { return new DualSpecModuleConfig(); }
-        const DualSpecModuleConfig* GetConfig() const override { return (DualSpecModuleConfig*)GetConfigInternal(); }
+        DualspecModule();
+        const DualSpecModuleConfig* GetConfig() const override;
 
         // Module Hooks
         void OnInitialize() override;

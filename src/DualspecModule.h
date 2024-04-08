@@ -62,7 +62,7 @@ namespace cmangos_module
 
         void LoadPlayerTalents(Player* player);
         bool PlayerHasTalent(Player* player, uint32 spellId, uint8 spec);
-        DualSpecPlayerTalentMap& GetPlayerTalents(uint32 playerId, int8 spec = -1);
+        DualSpecPlayerTalentMap* GetPlayerTalents(uint32 playerId, int8 spec = -1, bool assert = true);
         void AddPlayerTalent(uint32 playerId, uint32 spellId, uint8 spec, bool learned);
         void SavePlayerTalents(uint32 playerId);
 

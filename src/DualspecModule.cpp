@@ -437,15 +437,33 @@ namespace cmangos_module
 #endif
 
                 const uint32 playerId = player->GetObjectGuid().GetCounter();
-                DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(playerId);
-                for (auto& playerTalentsPair : playerTalents)
+                DualSpecPlayerTalentMap* playerTalents = GetPlayerTalents(playerId, -1, false);
+                if (playerTalents)
                 {
-                    const uint32 spellId = playerTalentsPair.first;
-                    DualspecPlayerTalent& playerTalent = playerTalentsPair.second;
-                    playerTalent.state = PLAYERSPELL_REMOVED;
-                }
+                    for (auto& playerTalentsPair : *playerTalents)
+                    {
+                        const uint32 spellId = playerTalentsPair.first;
+                        DualspecPlayerTalent& playerTalent = playerTalentsPair.second;
+                        playerTalent.state = PLAYERSPELL_REMOVED;
+                    }
 
-                SavePlayerTalents(playerId);
+                    SavePlayerTalents(playerId);
+                }
+                else
+                {
+                    // The player talents have been reset before a complete login
+                    // Try to get the current active spec 
+                    uint8 activeSpec = 0;
+                    auto result = CharacterDatabase.PQuery("SELECT `active_spec` FROM `custom_dualspec_characters` WHERE `guid` = '%u';", playerId);
+                    if (result)
+                    {
+                        Field* fields = result->Fetch();
+                        activeSpec = fields[0].GetUInt8();
+                    }
+
+                    // Remove the talents from the reset spec
+                    CharacterDatabase.DirectPExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u' and `spec` = '%u';", playerId, activeSpec);
+                }
             }
         }
     }
@@ -910,28 +928,35 @@ namespace cmangos_module
         if (player)
         {
             const uint32 playerId = player->GetObjectGuid().GetCounter();
-            DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(playerId, spec);
-            auto it = playerTalents.find(spellId);
-            if (it != playerTalents.end())
+            DualSpecPlayerTalentMap* playerTalents = GetPlayerTalents(playerId, spec);
+            if (playerTalents)
             {
-                return it->second.state != PLAYERSPELL_REMOVED;
+                auto it = playerTalents->find(spellId);
+                if (it != playerTalents->end())
+                {
+                    return it->second.state != PLAYERSPELL_REMOVED;
+                }
             }
         }
 
         return false;
     }
 
-    DualSpecPlayerTalentMap& DualspecModule::GetPlayerTalents(uint32 playerId, int8 spec)
+    DualSpecPlayerTalentMap* DualspecModule::GetPlayerTalents(uint32 playerId, int8 spec, bool assert)
     {
         auto playerTalentSpecIt = playersTalents.find(playerId);
         if (playerTalentSpecIt != playersTalents.end())
         {
             spec = spec >= 0 ? spec : GetPlayerActiveSpec(playerId);
-            return playerTalentSpecIt->second[spec];
+            return &playerTalentSpecIt->second[spec];
         }
 
-        MANGOS_ASSERT(false);
-        return playersTalents[0][0];
+        if (assert)
+        {
+            MANGOS_ASSERT(false);
+        }
+        
+        return nullptr;
     }
 
     void DualspecModule::AddPlayerTalent(uint32 playerId, uint32 spellId, uint8 spec, bool learned)
@@ -973,38 +998,41 @@ namespace cmangos_module
     {
         for (uint8 i = 0; i < MAX_TALENT_SPECS; ++i)
         {
-            DualSpecPlayerTalentMap& playerTalents = GetPlayerTalents(playerId, i);
-            for (auto playerTalentsIt = playerTalents.begin(); playerTalentsIt != playerTalents.end();)
+            DualSpecPlayerTalentMap* playerTalents = GetPlayerTalents(playerId, i);
+            if (playerTalents)
             {
-                const uint32 spellId = playerTalentsIt->first;
-                DualspecPlayerTalent& playerTalent = playerTalentsIt->second;
+                for (auto playerTalentsIt = playerTalents->begin(); playerTalentsIt != playerTalents->end();)
+                {
+                    const uint32 spellId = playerTalentsIt->first;
+                    DualspecPlayerTalent& playerTalent = playerTalentsIt->second;
 
-                if (playerTalent.state == PLAYERSPELL_REMOVED || playerTalent.state == PLAYERSPELL_CHANGED)
-                {
-                    CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u' and `spell` = '%u' and `spec` = '%u';",
-                        playerId,
-                        spellId,
-                        playerTalent.spec
-                    );
-                }
+                    if (playerTalent.state == PLAYERSPELL_REMOVED || playerTalent.state == PLAYERSPELL_CHANGED)
+                    {
+                        CharacterDatabase.PExecute("DELETE FROM `custom_dualspec_talent` WHERE `guid` = '%u' and `spell` = '%u' and `spec` = '%u';",
+                            playerId,
+                            spellId,
+                            playerTalent.spec
+                        );
+                    }
 
-                if (playerTalent.state == PLAYERSPELL_NEW || playerTalent.state == PLAYERSPELL_CHANGED)
-                {
-                    CharacterDatabase.PExecute("INSERT INTO custom_dualspec_talent (`guid`, `spell`, `spec`) VALUES ('%u', '%u', '%u');",
-                        playerId,
-                        spellId,
-                        playerTalent.spec
-                    );
-                }
+                    if (playerTalent.state == PLAYERSPELL_NEW || playerTalent.state == PLAYERSPELL_CHANGED)
+                    {
+                        CharacterDatabase.PExecute("INSERT INTO custom_dualspec_talent (`guid`, `spell`, `spec`) VALUES ('%u', '%u', '%u');",
+                            playerId,
+                            spellId,
+                            playerTalent.spec
+                        );
+                    }
 
-                if (playerTalent.state == PLAYERSPELL_REMOVED)
-                {
-                    playerTalents.erase(playerTalentsIt++);
-                }
-                else
-                {
-                    playerTalent.state = PLAYERSPELL_UNCHANGED;
-                    ++playerTalentsIt;
+                    if (playerTalent.state == PLAYERSPELL_REMOVED)
+                    {
+                        playerTalents->erase(playerTalentsIt++);
+                    }
+                    else
+                    {
+                        playerTalent.state = PLAYERSPELL_UNCHANGED;
+                        ++playerTalentsIt;
+                    }
                 }
             }
         }

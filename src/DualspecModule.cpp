@@ -227,7 +227,10 @@ namespace cmangos_module
                             player->ModifyMoney(-int32(GetConfig()->cost));
                             SetPlayerSpecCount(player, GetPlayerSpecCount(playerId) + 1);
                             OnGossipSelect(player, creature, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5, "", gossipListId);
-                            AddDualSpecItem(player);
+                            if (!player->GetItemCount(DUALSPEC_ITEM_ENTRY, true))
+                            {
+                                AddDualSpecItem(player);
+                            }
                         }
                         else
                         {
@@ -1228,7 +1231,7 @@ namespace cmangos_module
             ItemPrototype const* pProto = ObjectMgr::GetItemPrototype(DUALSPEC_ITEM_ENTRY);
             if (!pProto)
             {
-                session->SendAreaTriggerMessage("%s", DUAL_SPEC_ERR_ITEM_CREATE);
+                session->SendAreaTriggerMessage(player->GetSession()->GetMangosString(DUAL_SPEC_ERR_ITEM_CREATE));
                 return;
             }
 
@@ -1246,7 +1249,7 @@ namespace cmangos_module
 
             if (count == 0 || dest.empty())
             {
-                session->SendAreaTriggerMessage("%s", DUAL_SPEC_ERR_ITEM_CREATE);
+                session->SendAreaTriggerMessage(player->GetSession()->GetMangosString(DUAL_SPEC_ERR_ITEM_CREATE));
                 return;
             }
 
@@ -1258,7 +1261,7 @@ namespace cmangos_module
 
             if (noSpaceForCount > 0)
             {
-                session->SendAreaTriggerMessage("%s", DUAL_SPEC_ERR_ITEM_CREATE);
+                session->SendAreaTriggerMessage(player->GetSession()->GetMangosString(DUAL_SPEC_ERR_ITEM_CREATE));
             }
         }
     }

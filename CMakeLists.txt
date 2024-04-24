@@ -62,6 +62,7 @@ if(UNIX)
 endif()
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES PROJECT_LABEL "DualSpec")
+set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Modules")
 
 # Install config files
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/dualspec.conf.dist.in ${CMAKE_CURRENT_BINARY_DIR}/dualspec.conf.dist)
